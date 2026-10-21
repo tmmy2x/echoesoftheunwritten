@@ -1,52 +1,41 @@
-# Echoes of the Unwritten — Visual Development Bible
+# Echoes of the Unwritten — Art Bible (Milestone 0.8.0)
 
-## Visual thesis
+## Visual pillars
 
-A dark fantasy world where reality is physically edited. The art direction pairs monumental, readable silhouettes with restrained luminous accents: cyan for memory, violet for fractured space, gold for recovered truth, and rose-red for hostile authorship. Environments should communicate quest state through landmarks and light, not UI alone.
+- **Fractured mythic fantasy:** monumental architecture that feels like a memory reconstructed from incomplete evidence.
+- **Ink versus luminous seams:** ink-black layered silhouettes contrast with pale cyan, violet, and rose-red magical accents.
+- **Readable combat:** clear silhouettes, restrained bloom, strong hit flashes, and red telegraphs before dangerous boss attacks.
+- **A authored world, not random clutter:** modular stone and crystal pieces repeat with intentional composition, landmark framing, and negative space.
 
-## Player: Riven, the Unwritten
+## Hero — Riven, the Unwritten
 
-- **Silhouette:** compact agile spellblade with a high broken hood, split cloak, asymmetrical shoulder plates, a narrow luminous visor, and a blade with a cyan seam running through its center.
-- **Material language:** weathered gunmetal, dark woven cloth, worn brass, pale skin, and emissive fracture lines.
-- **Class variations:** Riftblade uses cyan-violet blade trails; Paradoxist uses crystalline blue-white seams and delayed afterimages; Hollowkeeper gains ghostly teal sigils and orbiting spirit motes; Dawnbreaker gains warm gold accents and a brighter protective halo.
-- **Animation targets for the production rig:** idle breath, walk/run cycles, turn-in-place, start/stop foot plants, basic combo, Q/E/R ability clips, dodge, hit-react, stagger, victory, and defeat. Root motion should be disabled in the browser game; movement remains game-state driven.
+The hero's bundled GLB is the primary player character. It contains a skinned mesh and a named skeleton, with Idle, Run, Attack, Cast, Hit, and Death animation clips. The current third-person action camera and class-colored aura support readability. Long-term art target: bespoke class variants, secondary motion for cloak and equipment, facial/helmet variants, and dedicated class attack clips.
 
-## Enemy family: Margin Wraiths
+## Enemy family — Margin Wraith
 
-- **Silhouette:** tall narrow torso, torn page-like mantle, floating lower body, asymmetrical quills, and a face that reads as a blank mask with two warm pinprick eyes.
-- **Behavior read:** a slow hover before pursuit, a sharp forward lunge before contact, and a page-shear burst when defeated.
-- **Material:** ink-black cloth, desaturated bone, rose-red edge light, thin emissive glyph seams.
+`assets/enemies/margin_wraith_design.glb` is the authored runtime enemy visual. It uses an ink mantle, a luminous core, and quill-like side forms. Runtime variants apply rose/cyan palette shifts, size classes, hovering, idle pulse, and quill motion. Current rigging limitation: this model is not a full skeletal creature rig; it is animated through scene-node transforms. A future production art pass should provide a skinned wraith rig with locomotion, telegraph, attack, hit-react, stagger, and death clips, plus separate Clockwraith and Redaction Knight silhouettes.
 
-## Chapter III boss: The Unwritten Author
+## Environment kit
 
-- **Silhouette:** a hovering robed figure whose mantle resembles torn manuscript leaves; eight quills orbit the torso; a cracked halo frames a bright rose core; fragments of gold script circle the body.
-- **Arena language:** the Name Vault is a circular stone archive with broken shelves suspended in the air, red correction marks in the floor, and a central empty lectern.
-- **Attack telegraph:** a rose-red ground ring appears before a reality correction. The ring must be readable at mobile size and leave a generous dodge window. Below 50% health, the attack cadence increases.
-- **Phase goals:** Phase I pursues and tests melee spacing. Phase II accelerates corrections and mixes contact pressure with telegraphed area denial. A future asset pass should add dedicated wind-up, cast, impact, recovery, and stagger clips.
+`assets/environment/modular_ruins_kit.glb` includes named modules:
 
-## Chapter III environment: The Archive at the End
+- `Pillar_Shaft`
+- `Pillar_Capital`
+- `Fractured_Arch_Left`
+- `Fractured_Arch_Right`
+- `Fractured_Arch_Lintel`
+- `Rift_Gate_Frame`
+- `Archive_Floor_Tile`
+- `Cyan_Crystal_Cluster_Core`
 
-- Broken shelves and script spires form a navigable silhouette skyline.
-- Rose-red fissures indicate authored/hostile space; gold shards indicate the three quest sigils; cyan remains associated with memories and safe navigation.
-- Landmarks should be spaced to aid orientation on a small screen. The Name Vault is the dominant far landmark, with a visible rose halo.
+These are now used by the runtime environment builder where assets are available. The scene composition changes per region through palette, fog, lighting, module placement, and landmarks.
 
-## Production asset standard for the next art pass
+## Chapter III — The Archive at the End
 
-The current milestone uses custom procedural geometry so the game remains lightweight and does not silently depend on unverified third-party models. For a true AAA-style visual step, replace key placeholder meshes with authored or properly licensed GLB assets:
+- Palette: ink-plum, muted burgundy, rose-red author corruption, and restrained gold.
+- Landmarks: towering archival stacks, broken arches, floating crystalline fragments, the Scribe's approach, and a visually distinct Name Vault gate.
+- Player navigation: keep sightlines readable; objectives and enemies must remain visible against dark scenery.
 
-- `riven_base.glb` — skinned player rig with four material/armor variants and named animation clips.
-- `margin_wraith.glb` — skinned common enemy with hover/lunge/death clips.
-- `redaction_knight.glb` — elite enemy with a weapon and guard-break animation.
-- `unwritten_author.glb` — bespoke multi-part boss with orbiting quills and separate core/halo meshes.
-- `shiverwild_environment.glb` — modular ruins, rocks, foliage, and path kit.
-- `forgotten_city_environment.glb` — modular time-locked architecture kit.
-- `name_vault_environment.glb` — boss arena, floating archive shelves, and rune props.
+## Production-quality roadmap
 
-Each imported asset must have a recorded source, license, polygon/texture budget, rig/clip naming contract, fallback mesh, and mobile performance check. Prefer original commissioned models or clearly licensed packs; do not ship assets whose redistribution rights are unclear.
-
-## Milestone 0.7.0 — authored asset pipeline
-
-- **Playable hero:** `assets/characters/unwritten_hero.glb` — original low-poly skinned hero, named joints, PBR materials, and Idle/Run/Attack/Cast/Hit/Death clips. This is the first imported skinned model; procedural fallback remains available.
-- **Margin Wraith design:** `assets/enemies/margin_wraith_design.glb` — original silhouette reference with ink mantle, core, and quills. Live combat entity rendering remains driven by the existing runtime renderer in this milestone.
-- **Modular Ruins Kit:** `assets/environment/modular_ruins_kit.glb` — named pillar, arch, rift frame, floor tile, and crystal modules for future region assembly.
-- **Style:** low-poly stylization with deliberate silhouette readability, ink-black cloth, slate armor, cyan hero seams, and rose-red Author corruption. Future purchased/downloaded assets must be license-checked and reworked to this art direction.
+The current assets are original project assets and are not being represented as AAA-ready commercial art. The next art iterations should add high-poly sculpt-to-game meshes, authored PBR texture sets, rigged enemy variants, dedicated animation clips, LODs, collision meshes, and a larger modular environment library. Preserve the current art direction and silhouette language across those replacements.

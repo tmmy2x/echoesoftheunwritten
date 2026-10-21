@@ -1,5 +1,5 @@
 {
-  "version": "0.7.0",
+  "version": "0.8.0",
   "artDirection": "The Unwritten: ink-black layered armor, pale cyan seams, rose-red author corruption, faceted silhouettes.",
   "assets": [
     {
@@ -17,15 +17,17 @@
     },
     {
       "id": "enemy-pipeline",
-      "path": "assets/enemies/README.md",
-      "format": "documentation",
-      "kind": "enemy-asset-spec"
+      "path": "assets/enemies/margin_wraith_design.glb",
+      "format": "glb",
+      "kind": "runtime-authored-enemy-model",
+      "runtime": "Preferred runtime visual for enemy instances; idle/quill motion and palette variants are applied by the 3D renderer."
     },
     {
       "id": "environment-pipeline",
-      "path": "assets/environment/README.md",
-      "format": "documentation",
-      "kind": "modular-environment-spec"
+      "path": "assets/environment/modular_ruins_kit.glb",
+      "format": "glb",
+      "kind": "runtime-modular-environment",
+      "runtime": "Named floor, pillar, arch, gate, and crystal modules are instantiated by the world renderer."
     },
     {
       "id": "margin-wraith-design",
@@ -33,7 +35,7 @@
       "format": "glb",
       "kind": "bespoke-enemy-design",
       "license": "Original generated asset for Echoes of the Unwritten",
-      "note": "Reference/preview model; runtime enemy behavior still uses the live enemy entity renderer."
+      "note": "Loaded as the preferred runtime enemy model; animated with hover, scale pulse, quill movement, and region-specific material accents."
     },
     {
       "id": "modular-ruins-kit",
@@ -50,7 +52,8 @@
         "Archive_Floor_Tile",
         "Cyan_Crystal_Cluster_Core"
       ],
-      "license": "Original generated asset for Echoes of the Unwritten"
+      "license": "Original generated asset for Echoes of the Unwritten",
+      "note": "Used by the runtime world builder for authored modular floor tiles, ruins, rift frames, and crystal clusters."
     }
   ]
 }

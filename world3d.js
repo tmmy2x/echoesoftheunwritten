@@ -1,5 +1,5 @@
 /* Echoes of the Unwritten — 3D world renderer, build 0.7.0 with skinned GLB art pipeline
-   Three.js is loaded from jsDelivr by index.html. All meshes are original procedural geometry. */
+   Three.js is loaded from jsDelivr by index.html. Authored GLB character, enemy and modular environment assets are preferred; emergency primitive fallbacks preserve playability offline. */
 (() => {
   'use strict';
   const THREE = window.THREE;
@@ -31,9 +31,28 @@
   const mats={
     ground:mat('#182b30'), grass:mat('#29453f'), stone:mat('#30364a'), stone2:mat('#45445d'), gold:mat('#d7b66c',.35,.55,'#b78337',.6),
     violet:mat('#9279f4',.35,.15,'#7252ff',2.0), cyan:mat('#65e7e5',.3,.1,'#39d9ec',2.6), red:mat('#ed718d',.35,.1,'#ed315d',2),
-    cloth:mat('#27243d'), armor:mat('#777b9d',.32,.55), skin:mat('#d4b99d'), dark:mat('#141827'), wood:mat('#493b38'), ghost:mat('#9f87ef',.25,.15,'#7255ff',2.4),
-    cityGround:mat('#202037'), cityStone:mat('#36304e'), crystal:mat('#73dce3',.25,.15,'#39d9ec',2.8)
+    cloth:mat('#27243d'), armor:mat('#777b9d',.32,.55), skin:mat('#d4b99d'), dark:mat('#141827'), ink:mat('#17121f',.42,.2,'#351626',.55), rose:mat('#ff6e96',.3,.15,'#e52b69',2.8), wood:mat('#493b38'), ghost:mat('#9f87ef',.25,.15,'#7255ff',2.4),
+    cityGround:mat('#202037'), cityStone:mat('#36304e'), archiveGround:mat('#1c101a'), archiveStone:mat('#453044',.72,.12,'#57203d',.4), crystal:mat('#73dce3',.25,.15,'#39d9ec',2.8)
   };
+  // Asset-first pipeline: the authored GLB models and modular kit are loaded once and reused.
+  // Procedural meshes remain only as an offline/CDN failure fallback, never as the preferred art path.
+  const assetState={loader:null,enemyTemplate:null,modules:null,loaded:false};
+  function beginAssetLoads(){
+    const Loader=window.EchoesGLTFLoader;if(!Loader)return;
+    const loader=new Loader();assetState.loader=loader;
+    loader.load('assets/enemies/margin_wraith_design.glb',gltf=>{
+      assetState.enemyTemplate=gltf.scene;assetState.enemyTemplate.name='AuthoredMarginWraithTemplate';
+      assetState.enemyTemplate.traverse(o=>{if(o.isMesh){o.castShadow=true;o.receiveShadow=true; if(o.material){o.material=o.material.clone();o.material.side=THREE.DoubleSide;}}});
+      // Replace any fallback enemy instances already present; the next frame instantiates GLB variants.
+      maps.enemies.forEach(m=>scene.remove(m));maps.enemies.clear();
+    },undefined,e=>console.warn('Authored enemy GLB unavailable; fallback enemy renderer remains active.',e));
+    loader.load('assets/environment/modular_ruins_kit.glb',gltf=>{
+      assetState.modules=new Map();gltf.scene.traverse(o=>{if(o.isMesh&&o.name){assetState.modules.set(o.name,o);}});assetState.loaded=true;
+      if(activeZone)buildTerrain(activeZone);
+    },undefined,e=>console.warn('Modular environment GLB unavailable; fallback environment remains active.',e));
+  }
+  if(window.EchoesGLTFLoader)beginAssetLoads();else window.addEventListener('echoes-gltf-loader-ready',beginAssetLoads,{once:true});
+  function cloneModule(name,parent,x,y,z,scale=1,rotation=0){const src=assetState.modules?.get(name);if(!src)return null;const obj=src.clone(true);obj.position.set(x,y,z);obj.scale.setScalar(scale);obj.rotation.y=rotation;obj.traverse(o=>{if(o.isMesh){o.geometry=o.geometry?.clone();if(Array.isArray(o.material))o.material=o.material.map(m=>m.clone());else if(o.material)o.material=o.material.clone();o.castShadow=!mobileQuality;o.receiveShadow=true;}});parent.add(obj);return obj;}
   function v(x,y,z){return new THREE.Vector3(x,y,z)}
   function pos(x,y,h=0){return v(x-world.w/2,h,y-world.h/2)}
   function mesh(geo,material,parent=scene){const m=new THREE.Mesh(geo,material);m.castShadow=true;m.receiveShadow=true;parent.add(m);return m}
@@ -93,6 +112,14 @@
   if(window.EchoesGLTFLoader)loadAuthoredHero();else window.addEventListener('echoes-gltf-loader-ready',loadAuthoredHero,{once:true});
 
   function makeWisp(e){
+    if(assetState.enemyTemplate){
+      const authored=new THREE.Group();const model=assetState.enemyTemplate.clone(true);const boss=e.type==='boss'||e.type==='authorBoss';const author=e.type==='authorBoss';
+      model.name='Authored_'+String(e.type||'enemy');model.scale.setScalar(author?1.7:boss?1.25:(e.type==='elite'?0.9:0.72));
+      const quills=[];model.traverse(o=>{if(/Quill/i.test(o.name))quills.push(o);if(o.isMesh){o.castShadow=!mobileQuality;o.receiveShadow=true;if(o.material){o.material=o.material.clone();if(author||e.type==='redaction') {o.material.emissive=new THREE.Color('#e52b69');o.material.emissiveIntensity=2.2;}else if(e.type==='wraith'){o.material.emissive=new THREE.Color('#39d9ec');o.material.emissiveIntensity=1.8;}}}});
+      authored.userData.quills=quills;authored.add(model);const aura=ring(authored,author?38:boss?27:16,author?2.1:1.1,author?mats.rose:(e.type==='wraith'?mats.crystal:mats.violet));aura.position.y=2;authored.userData.aura=aura;
+      if(boss){const telegraph=ring(authored,author?105:72,author?2.5:1.7,author?mats.rose:mats.red);telegraph.position.y=1;telegraph.visible=false;authored.userData.telegraph=telegraph;const halo=ring(authored,author?43:29,1.8,author?mats.rose:mats.violet);halo.position.y=52;authored.userData.halo=halo;}
+      const lbl=labelSprite(e.name,author?'#ff91ad':boss?'#ffb2cf':'#d9d0ff');lbl.position.y=author?90:boss?72:46;authored.add(lbl);authored.userData.authoredAsset=true;return authored;
+    }
     const g=new THREE.Group();const boss=e.type==='boss'||e.type==='authorBoss';const author=e.type==='authorBoss';const city=e.type==='wraith';
     const core=sphere(g,0,boss?(author?38:30):18,0,boss?(author?23:18):10,boss?(author?mats.rose:mats.red):(city?mats.crystal:mats.ghost),12);
     if(author){const mantle=mesh(new THREE.ConeGeometry(31,58,8),mats.ink,g);mantle.position.y=22;mantle.rotation.x=Math.PI;for(let i=0;i<8;i++){const quill=mesh(new THREE.ConeGeometry(4,34,5),mats.rose,g);const a=i*Math.PI/4;quill.position.set(Math.cos(a)*21,45+Math.sin(i*1.7)*8,Math.sin(a)*21);quill.rotation.z=-Math.cos(a)*.75;quill.rotation.x=Math.sin(a)*.75;}for(let i=0;i<4;i++){const page=box(g,Math.cos(i*1.57)*34,25+Math.sin(i)*8,Math.sin(i*1.57)*34,13,19,2,mats.gold,i*.5);page.material=page.material.clone();page.material.emissive.set('#ff7898');page.material.emissiveIntensity=1.2;}}
@@ -134,27 +161,27 @@
     terrain=new THREE.Group();scene.add(terrain);
     const floor=mesh(new THREE.PlaneGeometry(world.w,world.h,1,1),groundMat,terrain);floor.rotation.x=-Math.PI/2;floor.position.set(0,-1,0);floor.receiveShadow=true;
     // Large broken flagstones, paths, fissures and low-poly scenery create a walkable, readable space.
-    for(let z=-world.h/2+45;z<world.h/2;z+=82){for(let x=-world.w/2+45;x<world.w/2;x+=82){const seed=Math.sin(x*12.9898+z*78.233)*43758.5453;const n=seed-Math.floor(seed);if(n>.84)continue;const size=city?22+n*17:18+n*24;const tile=mesh(new THREE.BoxGeometry(size,.8,size*.72),archive?(n>.55?mats.archiveStone:mats.ink):city?(n>.6?mats.cityStone:mats.stone):(n>.65?mats.grass:mats.stone),terrain);tile.position.set(x,-.55,z);tile.rotation.y=n*1.4;tile.receiveShadow=true;tile.castShadow=false;}}
+    for(let z=-world.h/2+45;z<world.h/2;z+=82){for(let x=-world.w/2+45;x<world.w/2;x+=82){const seed=Math.sin(x*12.9898+z*78.233)*43758.5453;const n=seed-Math.floor(seed);if(n>.84)continue;const size=city?22+n*17:18+n*24;if(assetState.modules){cloneModule('Archive_Floor_Tile',terrain,x,-.55,z,.62+n*.24,n*1.4);}else{const tile=mesh(new THREE.BoxGeometry(size,.8,size*.72),archive?(n>.55?mats.archiveStone:mats.ink):city?(n>.6?mats.cityStone:mats.stone):(n>.65?mats.grass:mats.stone),terrain);tile.position.set(x,-.55,z);tile.rotation.y=n*1.4;tile.receiveShadow=true;tile.castShadow=false;}}}
     const paths=city?[[0,0,0,150],[0,150,220,90],[220,90,480,0],[-100,-100,150,-220]]:[[0,70,0,-100],[-80,-100,-320,-180],[0,-100,280,-210],[0,70,240,290]];
     paths.forEach(([x1,z1,x2,z2])=>{const len=Math.hypot(x2-x1,z2-z1);const road=mesh(new THREE.BoxGeometry(35,1,len),city?mats.cityStone:mats.stone2,terrain);road.position.set((x1+x2)/2,-.05,(z1+z2)/2);road.rotation.y=-Math.atan2(z2-z1,x2-x1)+Math.PI/2;road.castShadow=false;});
-    // Ancient pillars and fractured walls.
+    // Modular authored architecture replaces the old scattered primitive clutter.
     const rng=(i)=>{const x=Math.sin(i*127.1+zone.length*19.7)*43758.5453;return x-Math.floor(x)};
-    for(let i=0;i<40;i++){
-      const x=(rng(i+1)-.5)*(world.w-130),z=(rng(i+80)-.5)*(world.h-130);
-      if(Math.abs(x)<105&&Math.abs(z)<100)continue;
-      const h=city?24+rng(i+150)*58:18+rng(i+150)*43;
-      if(i%3===0){const pillar=cylinder(terrain,x,h/2,z,5+rng(i+3)*5,7+rng(i+3)*5,h,city?mats.cityStone:mats.stone2,6);pillar.rotation.z=(rng(i+4)-.5)*.15;}
-      else {const b=box(terrain,x,3+rng(i+9)*3,z,18+rng(i+4)*36,5+rng(i+6)*10,12+rng(i+5)*26,city?mats.cityStone:mats.stone2,rng(i+7)*1.4);b.rotation.z=(rng(i+8)-.5)*.12;}
-    }
-    // Luminous crystals and alien flora.
-    for(let i=0;i<30;i++){
-      const x=(rng(i+300)-.5)*(world.w-90),z=(rng(i+340)-.5)*(world.h-90);if(Math.abs(x)<80&&Math.abs(z)<90)continue;
-      if(i%2===0){const c=mesh(new THREE.ConeGeometry(7+rng(i+400)*6,24+rng(i+410)*28,5),city?mats.crystal:mats.violet,terrain);c.position.set(x,12,z);c.rotation.z=(rng(i+420)-.5)*.35;const light=new THREE.PointLight(city?'#64e3ef':'#9072ff',8,90,2);light.position.set(x,18,z);terrain.add(light);}
-      else {cylinder(terrain,x,5,z,2,3,10,mats.dark,5);for(let j=0;j<3;j++){const leaf=mesh(new THREE.ConeGeometry(5,20,5),city?mats.crystal:mats.grass,terrain);leaf.position.set(x+(j-1)*5,14,z+(j%2)*4);leaf.rotation.z=(j-1)*.5;}}
+    if(assetState.modules){
+      for(let i=0;i<14;i++){const x=(rng(i+1)-.5)*(world.w-180),z=(rng(i+80)-.5)*(world.h-180);if(Math.abs(x)<125&&Math.abs(z)<125)continue;
+        const scale=city?1.55:archive?1.65:1.35;const moduleName=i%5===0?'Fractured_Arch_Left':i%5===1?'Fractured_Arch_Right':i%5===2?'Pillar_Shaft':'Pillar_Capital';
+        cloneModule(moduleName,terrain,x,0,z,scale,rng(i+7)*Math.PI*2);
+      }
+      for(let i=0;i<18;i++){const x=(rng(i+300)-.5)*(world.w-110),z=(rng(i+340)-.5)*(world.h-110);if(Math.abs(x)<90&&Math.abs(z)<100)continue;cloneModule('Cyan_Crystal_Cluster_Core',terrain,x,0,z,city?.9:archive?.82:1.0,rng(i+420)*Math.PI*2);}
+      cloneModule('Rift_Gate_Frame',terrain,world.w/2-150,0,0,1.8,Math.PI/2);
+      cloneModule('Fractured_Arch_Lintel',terrain,0,0,-world.h/2+90,1.6,0);
+    } else {
+      // Offline fallback for environments where the GLTF loader or asset request fails.
+      for(let i=0;i<24;i++){const x=(rng(i+1)-.5)*(world.w-130),z=(rng(i+80)-.5)*(world.h-130);if(Math.abs(x)<105&&Math.abs(z)<100)continue;const h=city?24+rng(i+150)*58:18+rng(i+150)*43;const pillar=cylinder(terrain,x,h/2,z,5+rng(i+3)*5,7+rng(i+3)*5,h,city?mats.cityStone:mats.stone2,6);pillar.rotation.z=(rng(i+4)-.5)*.15;}
+      for(let i=0;i<14;i++){const x=(rng(i+300)-.5)*(world.w-90),z=(rng(i+340)-.5)*(world.h-90);const c=mesh(new THREE.ConeGeometry(7+rng(i+400)*6,24+rng(i+410)*28,5),city?mats.crystal:mats.violet,terrain);c.position.set(x,12,z);}
     }
     // Zone-specific centerpiece, a broken observatory or a time-locked clock tower.
     const cx=city?0:world.w/2-190,cz=city?-20:0;
-    if(archive){for(let i=0;i<7;i++){const x=-world.w/2+140+i*245;const tower=cylinder(terrain,x,45,-150+(i%2)*85,13,20,90+(i%3)*22,mats.archiveStone,7);tower.rotation.z=(i%2?.06:-.05);const crown=mesh(new THREE.ConeGeometry(22,32,6),mats.ink,terrain);crown.position.set(x,105+(i%3)*22,-150+(i%2)*85);const glyph=ring(terrain,26,1.4,mats.rose);glyph.position.set(x,52,-150+(i%2)*85);glyph.rotation.x=Math.PI/2;}for(let i=0;i<18;i++){const shard=mesh(new THREE.OctahedronGeometry(5+(i%4)*2,0),i%2?mats.rose:mats.gold,terrain);shard.position.set(-world.w/2+Math.abs(Math.sin(i*7.13))*world.w,8+(i%5)*7,-world.h/2+Math.abs(Math.cos(i*3.7))*world.h);shard.rotation.set(i*.7,i*1.3,i*.4);}}
+    if(archive){if(assetState.modules){for(let i=0;i<7;i++){const x=-world.w/2+140+i*245;cloneModule(i%2?'Fractured_Arch_Left':'Pillar_Shaft',terrain,x,0,-150+(i%2)*85,1.9+(i%3)*.15,i%2?.08:-.05);cloneModule('Pillar_Capital',terrain,x,70,-150+(i%2)*85,1.7,0);cloneModule('Rift_Gate_Frame',terrain,x,0,-150+(i%2)*85,1.1,0);}for(let i=0;i<18;i++)cloneModule('Cyan_Crystal_Cluster_Core',terrain,-world.w/2+Math.abs(Math.sin(i*7.13))*world.w,8+(i%5)*7,-world.h/2+Math.abs(Math.cos(i*3.7))*world.h,.6+(i%4)*.1,i*1.3);}else{for(let i=0;i<7;i++){const x=-world.w/2+140+i*245;const tower=cylinder(terrain,x,45,-150+(i%2)*85,13,20,90+(i%3)*22,mats.archiveStone,7);tower.rotation.z=(i%2?.06:-.05);const crown=mesh(new THREE.ConeGeometry(22,32,6),mats.ink,terrain);crown.position.set(x,105+(i%3)*22,-150+(i%2)*85);const glyph=ring(terrain,26,1.4,mats.rose);glyph.position.set(x,52,-150+(i%2)*85);glyph.rotation.x=Math.PI/2;}for(let i=0;i<18;i++){const shard=mesh(new THREE.OctahedronGeometry(5+(i%4)*2,0),i%2?mats.rose:mats.gold,terrain);shard.position.set(-world.w/2+Math.abs(Math.sin(i*7.13))*world.w,8+(i%5)*7,-world.h/2+Math.abs(Math.cos(i*3.7))*world.h);shard.rotation.set(i*.7,i*1.3,i*.4);}}}
     if(city){for(let i=0;i<3;i++){const tower=cylinder(terrain,cx+(i-1)*55,38,cz+(i%2)*25,12,18,76,mats.cityStone,7);tower.rotation.z=(i-1)*.08;const cap=mesh(new THREE.ConeGeometry(19,26,7),mats.violet,terrain);cap.position.set(cx+(i-1)*55,89,cz+(i%2)*25);}}
     else {const obelisk=mesh(new THREE.OctahedronGeometry(44,0),mats.violet,terrain);obelisk.position.set(cx,48,cz);obelisk.scale.set(1,1.8,1);const halo=ring(terrain,67,2,mats.cyan);halo.position.set(cx,28,cz);halo.rotation.x=Math.PI/2;}
     const borderMat=city?mats.violet:mats.cyan;
@@ -162,9 +189,9 @@
     scene.background=new THREE.Color(archive?'#1c101a':city?'#141329':'#101a25');scene.fog.color.set(archive?'#2a1422':city?'#17132b':'#101a25');scene.fog.density=archive?.0015:city?.00135:.00112;
     warm.color.set(archive?'#ff537f':city?'#6adce8':'#9a72ff');warm.position.set(city?0:cx,65,city?-20:cz);warm.intensity=archive?145:city?115:85;
   }
-  function ensureZone(zone){if(activeZone===zone)return;activeZone=zone;buildTerrain(zone);maps.enemies.forEach(m=>{scene.remove(m);});maps.objects.forEach(m=>scene.remove(m));maps.enemies.clear();maps.objects.clear();}
+  function ensureZone(zone){if(activeZone===zone)return;activeZone=zone;try{buildTerrain(zone)}catch(err){console.error('Zone renderer recovered from a terrain build error:',err);activeZone='';throw err;}maps.enemies.forEach(m=>{scene.remove(m);});maps.objects.forEach(m=>scene.remove(m));maps.enemies.clear();maps.objects.clear();}
   function syncEntities(state){
-    const enemyIds=new Set();for(const e of state.enemies||[]){if(!e.alive)continue;enemyIds.add(String(e.id));let g=maps.enemies.get(String(e.id));if(!g){g=makeWisp(e);maps.enemies.set(String(e.id),g);scene.add(g)}const p=pos(e.x,e.y,0);g.position.set(p.x,Math.sin((e.phase||0)*2.6)*2,p.z);g.rotation.y=(e.phase||0)*.3;if(g.userData.core){g.userData.core.scale.setScalar(e.type==='boss'?1+Math.sin(state.tick*4)*.09:1+Math.sin(state.tick*3)*.06);if(e.hit>0)g.userData.core.material=mats.gold;else g.userData.core.material=e.type==='authorBoss'?mats.rose:e.type==='boss'?mats.red:(e.type==='wraith'?mats.crystal:e.type==='redaction'?mats.rose:mats.ghost)}if(g.userData.halo)g.userData.halo.rotation.z=state.tick*.45;if(g.userData.telegraph){g.userData.telegraph.position.set((e.warningX??e.x)-e.x,1,(e.warningY??e.y)-e.y);g.userData.telegraph.visible=!!(e.warning&&e.warning>0);g.userData.telegraph.scale.setScalar(.6+.4*Math.sin(state.tick*10));g.userData.telegraph.material.opacity=e.warning?Math.min(1,.25+e.warning):.7;g.userData.telegraph.material.transparent=true;}if(g.userData.aura)g.userData.aura.rotation.z=-state.tick*.7;if(g.userData.orbs)g.userData.orbs.forEach((o,i)=>{const n=g.userData.orbs.length,a=state.tick*(e.type==='authorBoss'?1.0:1.5)+i*Math.PI*2/n,r=e.type==='authorBoss'?43:23;o.position.set(Math.cos(a)*r,20+Math.sin(a*1.4)*8,Math.sin(a)*r)});g.rotation.x=e.type==='authorBoss'?Math.sin(state.tick*1.3)*.08:0;g.visible=true;g.userData.hp=e.hp/e.maxHp;}
+    const enemyIds=new Set();for(const e of state.enemies||[]){if(!e.alive)continue;enemyIds.add(String(e.id));let g=maps.enemies.get(String(e.id));if(!g){g=makeWisp(e);maps.enemies.set(String(e.id),g);scene.add(g)}const p=pos(e.x,e.y,0);g.position.set(p.x,Math.sin((e.phase||0)*2.6)*2,p.z);g.rotation.y=(e.phase||0)*.3;if(g.userData.authoredAsset){g.rotation.z=Math.sin(state.tick*1.8+(e.phase||0))*(e.type==='authorBoss'?.07:.035);g.scale.setScalar((e.type==='authorBoss'?1.7:e.type==='boss'?1.25:e.type==='elite'?.9:.72)*(1+Math.sin(state.tick*3+(e.phase||0))*.018));(g.userData.quills||[]).forEach((q,i)=>{q.rotation.z=Math.sin(state.tick*2.3+i+(e.phase||0))*.22;q.rotation.x=Math.cos(state.tick*1.7+i)*.16;});}if(g.userData.core){g.userData.core.scale.setScalar(e.type==='boss'?1+Math.sin(state.tick*4)*.09:1+Math.sin(state.tick*3)*.06);if(e.hit>0)g.userData.core.material=mats.gold;else g.userData.core.material=e.type==='authorBoss'?mats.rose:e.type==='boss'?mats.red:(e.type==='wraith'?mats.crystal:e.type==='redaction'?mats.rose:mats.ghost)}if(g.userData.halo)g.userData.halo.rotation.z=state.tick*.45;if(g.userData.telegraph){g.userData.telegraph.position.set((e.warningX??e.x)-e.x,1,(e.warningY??e.y)-e.y);g.userData.telegraph.visible=!!(e.warning&&e.warning>0);g.userData.telegraph.scale.setScalar(.6+.4*Math.sin(state.tick*10));g.userData.telegraph.material.opacity=e.warning?Math.min(1,.25+e.warning):.7;g.userData.telegraph.material.transparent=true;}if(g.userData.aura)g.userData.aura.rotation.z=-state.tick*.7;if(g.userData.orbs)g.userData.orbs.forEach((o,i)=>{const n=g.userData.orbs.length,a=state.tick*(e.type==='authorBoss'?1.0:1.5)+i*Math.PI*2/n,r=e.type==='authorBoss'?43:23;o.position.set(Math.cos(a)*r,20+Math.sin(a*1.4)*8,Math.sin(a)*r)});g.rotation.x=e.type==='authorBoss'?Math.sin(state.tick*1.3)*.08:0;g.visible=true;g.userData.hp=e.hp/e.maxHp;}
     for(const [id,g] of maps.enemies){if(!enemyIds.has(id)){scene.remove(g);maps.enemies.delete(id)}}
     const objIds=new Set();for(const o of state.interactables||[]){objIds.add(String(o.id));let g=maps.objects.get(String(o.id));if(!g){g=makeObject(o);maps.objects.set(String(o.id),g);scene.add(g)}const p=pos(o.x,o.y,0);g.position.set(p.x,0,p.z);g.rotation.y=o.type==='npc'?Math.sin(state.tick*.4)*.08:0;g.visible=!(o.used&&o.type!=='npc');if(o.used&&o.type!=='npc')g.visible=false;if(g.userData.shard){g.userData.shard.rotation.y=state.tick*1.2;g.userData.shard.rotation.x=Math.sin(state.tick)*.2;g.userData.shard.position.y=22+Math.sin(state.tick*2+o.x)*3;if(o.type==='authorSigil'){g.userData.shard.rotation.x=state.tick*.8;g.userData.aura.material=mats.rose;}}if(g.userData.portal){g.userData.portal.rotation.y=state.tick*.25;g.userData.inner.material.opacity=.14+Math.sin(state.tick*2)*.07}if(g.userData.aura)g.userData.aura.rotation.z=state.tick*.5;}
     for(const [id,g] of maps.objects){if(!objIds.has(id)){scene.remove(g);maps.objects.delete(id)}}
@@ -192,5 +219,5 @@
     // Light follow gives the hero a readable focal glow without flattening the night palette.
     warm.position.set(pp.x+35,62,pp.z-15);frame++;renderer.render(scene,camera);
   }
-  window.Echoes3D={render,renderer,scene,version:'0.7.0',get heroRigLoaded(){return !!player.userData.authoredRig;}};
+  window.Echoes3D={render,renderer,scene,version:'0.8.0',get heroRigLoaded(){return !!player.userData.authoredRig;}};
 })();

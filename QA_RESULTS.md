@@ -1,30 +1,34 @@
-# QA Results — Milestone 0.7.0
+# Milestone 0.8.0 QA Results
 
-## Automated/static checks performed
+## Completed checks
 
-- `game.js` passes `node --check`.
-- `world3d.js` passes `node --check`.
-- All delivered GLB files have valid GLB 2.0 headers and can be parsed by the local glTF/trimesh parser.
-- The hero GLB contains a skin, named skeleton joints, and six animation clips: Idle, Run, Attack, Cast, Hit, Death.
-- The modular ruins GLB exposes eight named modular meshes/nodes.
-- The Chapter II boss epilogue calls the Chapter III unlock helper.
-- The save migration detects old saves with `cityBossDefeated` and a Chapter II quest and moves them into `author-arrival` in `author-archive`.
-- The save writer emits version 6 and migration accepts versions 1–6.
-- The GLTFLoader is loaded before `world3d.js`; runtime model load failure retains the procedural character.
-- ZIP archive integrity is checked during packaging.
+1. `game.js` passes `node --check`.
+2. `world3d.js` passes `node --check`.
+3. Chapter III archive material references are defined (`archiveGround`, `archiveStone`, `ink`, `rose`).
+4. `render()` catches 3D render failures and exposes the 2D canvas fallback instead of leaving the game screen black.
+5. `ensureZone()` rebuilds terrain when the active zone changes.
+6. The archive zone is selected from the existing save state and seeded with the Blind Scribe, sigils, gate, and enemies.
+7. GLTFLoader is loaded before/alongside the renderer using the existing readiness event.
+8. Authored enemy GLB is requested from the bundled `assets/enemies/` path.
+9. Modular environment GLB is requested from the bundled `assets/environment/` path.
+10. Authored modular floor tiles, pillars, arches, crystal clusters, and gate frame are used when the GLB is available.
+11. Enemy visuals use the authored GLB template when available and animate hover, scale pulse, palette variation, and quill motion.
+12. The existing skinned hero loader retains Idle, Run, Attack, Cast, Hit, and Death clip support.
+13. Local save version is migrated to 7 while accepting save envelopes from versions 1–7.
+14. GLB container headers and JSON chunks parse successfully.
+15. ZIP archive integrity check passes.
 
-## Browser checks still required
+## Browser verification status
 
-This environment did not run an interactive browser session for this build. Please verify in the deployed browser:
+A live Chromium screenshot attempt in the build environment timed out before producing a screenshot, so full browser interaction is **not certified by this QA run**. Please verify Chapter III in the deployed browser, including moving around the archive, talking to the Blind Scribe, collecting all three sigils, and opening the Name Vault. The Chapter III blank screen cause identified in code was undefined archive materials; those definitions and a renderer recovery path are included here.
 
-1. Load your existing version 0.6.0 save after Chapter II completion. Expected: the player appears in the Archive at the End with `Chapter III: The Author's Name` active.
-2. Defeat Tomorrow's Witness on a save that has not yet completed Chapter II. Continue the boss epilogue. Expected: Chapter III loads without returning to the Clockmaker.
-3. Confirm the Blind Scribe is reachable at the new starting point and the quest marker points to the Scribe.
-4. Confirm `assets/characters/unwritten_hero.glb` loads and the player animates between Idle/Run/Attack/Cast/Hit. If it does not load, confirm the procedural hero remains visible.
-5. Test on both desktop and mobile Safari/Chrome.
+## Manual acceptance checklist
 
-## Known limitations
-
-- The art assets are original stylized alpha assets, not AAA-finished or motion-captured production content.
-- Enemy and modular environment GLBs are included as bespoke art/kit assets; the current world still uses procedural runtime enemy and environment meshes rather than placing every GLB module into the live scene.
-- Three.js and GLTFLoader require network access to the jsDelivr CDN.
+- [ ] Load an existing save that has completed Chapter II.
+- [ ] Confirm the Archive at the End renders instead of a black screen.
+- [ ] Confirm the Blind Scribe, three sigils, enemies, and Name Vault appear.
+- [ ] Talk to the Scribe; confirm the sigil quest starts.
+- [ ] Collect the three sigils and return to the Scribe.
+- [ ] Enter the Name Vault and engage The Unwritten Author.
+- [ ] Reload and confirm campaign progress persists.
+- [ ] Test desktop controls and mobile touch controls.
