@@ -1,5 +1,5 @@
 {
-  "version": "0.8.0",
+  "version": "0.9.0",
   "artDirection": "The Unwritten: ink-black layered armor, pale cyan seams, rose-red author corruption, faceted silhouettes.",
   "assets": [
     {
@@ -54,6 +54,22 @@
       ],
       "license": "Original generated asset for Echoes of the Unwritten",
       "note": "Used by the runtime world builder for authored modular floor tiles, ruins, rift frames, and crystal clusters."
+    },
+    {
+      "id": "ink-stalker",
+      "path": "assets/enemies/ink_stalker.glb",
+      "format": "glb",
+      "kind": "distinct enemy node-rig",
+      "runtime": "Selected for stalker/redaction variants; articulated limbs and crest animate at runtime.",
+      "license": "Original generated asset for Echoes of the Unwritten"
+    },
+    {
+      "id": "clockbound-sentinel",
+      "path": "assets/enemies/clockbound_sentinel.glb",
+      "format": "glb",
+      "kind": "distinct enemy node-rig",
+      "runtime": "Selected for elite and heavy enemy variants; arms, crest, and runes animate at runtime.",
+      "license": "Original generated asset for Echoes of the Unwritten"
     }
   ]
 }

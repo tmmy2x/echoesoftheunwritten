@@ -36,23 +36,24 @@
   };
   // Asset-first pipeline: the authored GLB models and modular kit are loaded once and reused.
   // Procedural meshes remain only as an offline/CDN failure fallback, never as the preferred art path.
-  const assetState={loader:null,enemyTemplate:null,modules:null,loaded:false};
+  const assetState={loader:null,enemyTemplate:null,enemyTemplates:new Map(),modules:null,loaded:false};
   function beginAssetLoads(){
     const Loader=window.EchoesGLTFLoader;if(!Loader)return;
     const loader=new Loader();assetState.loader=loader;
-    loader.load('assets/enemies/margin_wraith_design.glb',gltf=>{
-      assetState.enemyTemplate=gltf.scene;assetState.enemyTemplate.name='AuthoredMarginWraithTemplate';
-      assetState.enemyTemplate.traverse(o=>{if(o.isMesh){o.castShadow=true;o.receiveShadow=true; if(o.material){o.material=o.material.clone();o.material.side=THREE.DoubleSide;}}});
-      // Replace any fallback enemy instances already present; the next frame instantiates GLB variants.
+    const enemyAssets=[['margin','assets/enemies/margin_wraith_design.glb'],['stalker','assets/enemies/ink_stalker.glb'],['sentinel','assets/enemies/clockbound_sentinel.glb']];
+    enemyAssets.forEach(([key,url])=>loader.load(url,gltf=>{
+      const template=gltf.scene;template.name='Authored_'+key+'_Template';
+      template.traverse(o=>{if(o.isMesh){o.castShadow=!mobileQuality;o.receiveShadow=!mobileQuality;if(o.material){o.material=o.material.clone();o.material.side=THREE.DoubleSide;}}});
+      assetState.enemyTemplates.set(key,template);if(key==='margin')assetState.enemyTemplate=template;
       maps.enemies.forEach(m=>scene.remove(m));maps.enemies.clear();
-    },undefined,e=>console.warn('Authored enemy GLB unavailable; fallback enemy renderer remains active.',e));
+    },undefined,e=>console.warn('Enemy GLB unavailable: '+url,e)));
     loader.load('assets/environment/modular_ruins_kit.glb',gltf=>{
-      assetState.modules=new Map();gltf.scene.traverse(o=>{if(o.isMesh&&o.name){assetState.modules.set(o.name,o);}});assetState.loaded=true;
+      assetState.modules=new Map();gltf.scene.traverse(o=>{if(o.isMesh&&o.name){assetState.modules.set(o.name.replace(/_mesh$/,''),o);}});assetState.loaded=true;
       if(activeZone)buildTerrain(activeZone);
     },undefined,e=>console.warn('Modular environment GLB unavailable; fallback environment remains active.',e));
   }
   if(window.EchoesGLTFLoader)beginAssetLoads();else window.addEventListener('echoes-gltf-loader-ready',beginAssetLoads,{once:true});
-  function cloneModule(name,parent,x,y,z,scale=1,rotation=0){const src=assetState.modules?.get(name);if(!src)return null;const obj=src.clone(true);obj.position.set(x,y,z);obj.scale.setScalar(scale);obj.rotation.y=rotation;obj.traverse(o=>{if(o.isMesh){o.geometry=o.geometry?.clone();if(Array.isArray(o.material))o.material=o.material.map(m=>m.clone());else if(o.material)o.material=o.material.clone();o.castShadow=!mobileQuality;o.receiveShadow=true;}});parent.add(obj);return obj;}
+  function cloneModule(name,parent,x,y,z,scale=1,rotation=0){const src=assetState.modules?.get(name);if(!src)return null;const obj=src.clone(true);obj.position.set(x,y,z);obj.scale.setScalar(scale);obj.rotation.y=rotation;obj.traverse(o=>{if(o.isMesh){if(Array.isArray(o.material))o.material=o.material.map(m=>m.clone());else if(o.material)o.material=o.material.clone();o.castShadow=!mobileQuality;o.receiveShadow=!mobileQuality;}});parent.add(obj);return obj;}
   function v(x,y,z){return new THREE.Vector3(x,y,z)}
   function pos(x,y,h=0){return v(x-world.w/2,h,y-world.h/2)}
   function mesh(geo,material,parent=scene){const m=new THREE.Mesh(geo,material);m.castShadow=true;m.receiveShadow=true;parent.add(m);return m}
@@ -112,11 +113,14 @@
   if(window.EchoesGLTFLoader)loadAuthoredHero();else window.addEventListener('echoes-gltf-loader-ready',loadAuthoredHero,{once:true});
 
   function makeWisp(e){
-    if(assetState.enemyTemplate){
-      const authored=new THREE.Group();const model=assetState.enemyTemplate.clone(true);const boss=e.type==='boss'||e.type==='authorBoss';const author=e.type==='authorBoss';
-      model.name='Authored_'+String(e.type||'enemy');model.scale.setScalar(author?1.7:boss?1.25:(e.type==='elite'?0.9:0.72));
-      const quills=[];model.traverse(o=>{if(/Quill/i.test(o.name))quills.push(o);if(o.isMesh){o.castShadow=!mobileQuality;o.receiveShadow=true;if(o.material){o.material=o.material.clone();if(author||e.type==='redaction') {o.material.emissive=new THREE.Color('#e52b69');o.material.emissiveIntensity=2.2;}else if(e.type==='wraith'){o.material.emissive=new THREE.Color('#39d9ec');o.material.emissiveIntensity=1.8;}}}});
-      authored.userData.quills=quills;authored.add(model);const aura=ring(authored,author?38:boss?27:16,author?2.1:1.1,author?mats.rose:(e.type==='wraith'?mats.crystal:mats.violet));aura.position.y=2;authored.userData.aura=aura;
+    const kind=(e.type==='wraith'||e.type==='redaction')?'stalker':(e.type==='elite'||e.type==='boss')?'sentinel':'margin';
+    const template=assetState.enemyTemplates.get(kind)||assetState.enemyTemplate;
+    if(template){
+      const authored=new THREE.Group();const model=template.clone(true);const boss=e.type==='boss'||e.type==='authorBoss';const author=e.type==='authorBoss';
+      model.name='Authored_'+String(e.type||'enemy');const baseScale=author?1.7:boss?1.25:(e.type==='elite'?0.9:kind==='stalker'?.68:.72);model.scale.setScalar(baseScale);
+      const joints=[];const detailMeshes=[];model.traverse(o=>{if(/Arm_|BladeArm|Leg_|Quill|Crest|Pauldron|Rune_/i.test(o.name))joints.push(o);if(/Quill|Rune_|Crest|Pauldron/i.test(o.name))detailMeshes.push(o);if(o.isMesh){o.castShadow=!mobileQuality;o.receiveShadow=!mobileQuality;if(o.material){o.material=o.material.clone();if(author||e.type==='redaction'){o.material.emissive=new THREE.Color('#e52b69');o.material.emissiveIntensity=1.65;}else if(kind==='stalker'||e.type==='wraith'){o.material.emissive=new THREE.Color('#39d9ec');o.material.emissiveIntensity=1.1;}else if(kind==='sentinel'){o.material.emissive=new THREE.Color('#d6a54f');o.material.emissiveIntensity=.75;}}}});
+      authored.userData.joints=joints;authored.userData.detailMeshes=detailMeshes;authored.userData.enemyKind=kind;authored.add(model);
+      const aura=ring(authored,author?38:boss?27:16,author?2.1:1.1,author?mats.rose:(kind==='stalker'?mats.crystal:kind==='sentinel'?mats.gold:mats.violet));aura.position.y=2;authored.userData.aura=aura;
       if(boss){const telegraph=ring(authored,author?105:72,author?2.5:1.7,author?mats.rose:mats.red);telegraph.position.y=1;telegraph.visible=false;authored.userData.telegraph=telegraph;const halo=ring(authored,author?43:29,1.8,author?mats.rose:mats.violet);halo.position.y=52;authored.userData.halo=halo;}
       const lbl=labelSprite(e.name,author?'#ff91ad':boss?'#ffb2cf':'#d9d0ff');lbl.position.y=author?90:boss?72:46;authored.add(lbl);authored.userData.authoredAsset=true;return authored;
     }
@@ -191,13 +195,13 @@
   }
   function ensureZone(zone){if(activeZone===zone)return;activeZone=zone;try{buildTerrain(zone)}catch(err){console.error('Zone renderer recovered from a terrain build error:',err);activeZone='';throw err;}maps.enemies.forEach(m=>{scene.remove(m);});maps.objects.forEach(m=>scene.remove(m));maps.enemies.clear();maps.objects.clear();}
   function syncEntities(state){
-    const enemyIds=new Set();for(const e of state.enemies||[]){if(!e.alive)continue;enemyIds.add(String(e.id));let g=maps.enemies.get(String(e.id));if(!g){g=makeWisp(e);maps.enemies.set(String(e.id),g);scene.add(g)}const p=pos(e.x,e.y,0);g.position.set(p.x,Math.sin((e.phase||0)*2.6)*2,p.z);g.rotation.y=(e.phase||0)*.3;if(g.userData.authoredAsset){g.rotation.z=Math.sin(state.tick*1.8+(e.phase||0))*(e.type==='authorBoss'?.07:.035);g.scale.setScalar((e.type==='authorBoss'?1.7:e.type==='boss'?1.25:e.type==='elite'?.9:.72)*(1+Math.sin(state.tick*3+(e.phase||0))*.018));(g.userData.quills||[]).forEach((q,i)=>{q.rotation.z=Math.sin(state.tick*2.3+i+(e.phase||0))*.22;q.rotation.x=Math.cos(state.tick*1.7+i)*.16;});}if(g.userData.core){g.userData.core.scale.setScalar(e.type==='boss'?1+Math.sin(state.tick*4)*.09:1+Math.sin(state.tick*3)*.06);if(e.hit>0)g.userData.core.material=mats.gold;else g.userData.core.material=e.type==='authorBoss'?mats.rose:e.type==='boss'?mats.red:(e.type==='wraith'?mats.crystal:e.type==='redaction'?mats.rose:mats.ghost)}if(g.userData.halo)g.userData.halo.rotation.z=state.tick*.45;if(g.userData.telegraph){g.userData.telegraph.position.set((e.warningX??e.x)-e.x,1,(e.warningY??e.y)-e.y);g.userData.telegraph.visible=!!(e.warning&&e.warning>0);g.userData.telegraph.scale.setScalar(.6+.4*Math.sin(state.tick*10));g.userData.telegraph.material.opacity=e.warning?Math.min(1,.25+e.warning):.7;g.userData.telegraph.material.transparent=true;}if(g.userData.aura)g.userData.aura.rotation.z=-state.tick*.7;if(g.userData.orbs)g.userData.orbs.forEach((o,i)=>{const n=g.userData.orbs.length,a=state.tick*(e.type==='authorBoss'?1.0:1.5)+i*Math.PI*2/n,r=e.type==='authorBoss'?43:23;o.position.set(Math.cos(a)*r,20+Math.sin(a*1.4)*8,Math.sin(a)*r)});g.rotation.x=e.type==='authorBoss'?Math.sin(state.tick*1.3)*.08:0;g.visible=true;g.userData.hp=e.hp/e.maxHp;}
+    const enemyIds=new Set();for(const e of state.enemies||[]){if(!e.alive)continue;enemyIds.add(String(e.id));let g=maps.enemies.get(String(e.id));if(!g){g=makeWisp(e);maps.enemies.set(String(e.id),g);scene.add(g)}const p=pos(e.x,e.y,0);g.position.set(p.x,Math.sin((e.phase||0)*2.6)*2,p.z);g.rotation.y=(e.phase||0)*.3;if(g.userData.authoredAsset){g.rotation.z=Math.sin(state.tick*1.8+(e.phase||0))*(e.type==='authorBoss'?.07:.035);const base=e.type==='authorBoss'?1.7:e.type==='boss'?1.25:e.type==='elite'?.9:g.userData.enemyKind==='stalker'?.68:.72;g.scale.setScalar(base*(1+Math.sin(state.tick*3+(e.phase||0))*.018));(g.userData.joints||[]).forEach((q,i)=>{const wave=state.tick*(g.userData.enemyKind==='sentinel'?2.0:2.8)+i*.91+(e.phase||0);q.rotation.z=Math.sin(wave)*(/Arm|Quill|BladeArm/i.test(q.name)?.26:.13);q.rotation.x=Math.cos(wave*.73)*.18;});const dist=Math.hypot((state.player?.x||0)-e.x,(state.player?.y||0)-e.y);(g.userData.detailMeshes||[]).forEach(o=>{o.visible=!mobileQuality||dist<470;});}if(g.userData.core){g.userData.core.scale.setScalar(e.type==='boss'?1+Math.sin(state.tick*4)*.09:1+Math.sin(state.tick*3)*.06);if(e.hit>0)g.userData.core.material=mats.gold;else g.userData.core.material=e.type==='authorBoss'?mats.rose:e.type==='boss'?mats.red:(e.type==='wraith'?mats.crystal:e.type==='redaction'?mats.rose:mats.ghost)}if(g.userData.halo)g.userData.halo.rotation.z=state.tick*.45;if(g.userData.telegraph){g.userData.telegraph.position.set((e.warningX??e.x)-e.x,1,(e.warningY??e.y)-e.y);g.userData.telegraph.visible=!!(e.warning&&e.warning>0);g.userData.telegraph.scale.setScalar(.6+.4*Math.sin(state.tick*10));g.userData.telegraph.material.opacity=e.warning?Math.min(1,.25+e.warning):.7;g.userData.telegraph.material.transparent=true;}if(g.userData.aura)g.userData.aura.rotation.z=-state.tick*.7;if(g.userData.orbs)g.userData.orbs.forEach((o,i)=>{const n=g.userData.orbs.length,a=state.tick*(e.type==='authorBoss'?1.0:1.5)+i*Math.PI*2/n,r=e.type==='authorBoss'?43:23;o.position.set(Math.cos(a)*r,20+Math.sin(a*1.4)*8,Math.sin(a)*r)});g.rotation.x=e.type==='authorBoss'?Math.sin(state.tick*1.3)*.08:0;g.visible=true;g.userData.hp=e.hp/e.maxHp;}
     for(const [id,g] of maps.enemies){if(!enemyIds.has(id)){scene.remove(g);maps.enemies.delete(id)}}
     const objIds=new Set();for(const o of state.interactables||[]){objIds.add(String(o.id));let g=maps.objects.get(String(o.id));if(!g){g=makeObject(o);maps.objects.set(String(o.id),g);scene.add(g)}const p=pos(o.x,o.y,0);g.position.set(p.x,0,p.z);g.rotation.y=o.type==='npc'?Math.sin(state.tick*.4)*.08:0;g.visible=!(o.used&&o.type!=='npc');if(o.used&&o.type!=='npc')g.visible=false;if(g.userData.shard){g.userData.shard.rotation.y=state.tick*1.2;g.userData.shard.rotation.x=Math.sin(state.tick)*.2;g.userData.shard.position.y=22+Math.sin(state.tick*2+o.x)*3;if(o.type==='authorSigil'){g.userData.shard.rotation.x=state.tick*.8;g.userData.aura.material=mats.rose;}}if(g.userData.portal){g.userData.portal.rotation.y=state.tick*.25;g.userData.inner.material.opacity=.14+Math.sin(state.tick*2)*.07}if(g.userData.aura)g.userData.aura.rotation.z=state.tick*.5;}
     for(const [id,g] of maps.objects){if(!objIds.has(id)){scene.remove(g);maps.objects.delete(id)}}
   }
   function syncParticles(state,dt){
-    const arr=state.particles||[];while(maps.particles.length<arr.length){const m=sphere(scene,0,-10000,0,1,mats.cyan,8);m.material=m.material.clone();maps.particles.push(m)}
+    const arr=(state.particles||[]).slice(- (mobileQuality?100:220));state.particles=arr;while(maps.particles.length<arr.length){const m=sphere(scene,0,-10000,0,1,mats.cyan,8);m.material=m.material.clone();maps.particles.push(m)}
     arr.forEach((p,i)=>{const m=maps.particles[i];p.x+=p.vx*dt;p.y+=p.vy*dt;p.vx*=Math.pow(.08,dt);p.vy*=Math.pow(.08,dt);p.t-=dt;const q=pos(p.x,p.y,8+Math.max(0,p.r||2));m.position.set(q.x,q.y,q.z);m.scale.setScalar(Math.max(.01,(p.r||2)*Math.min(1,p.t/(p.max||.5))));m.material.color.set(p.color||'#79d8db');m.material.emissive.set(p.color||'#79d8db');m.material.emissiveIntensity=2.2;m.visible=p.t>0;});
     state.particles=arr.filter(p=>p.t>0);for(let i=state.particles.length;i<maps.particles.length;i++)maps.particles[i].visible=false;
     const floats=state.floats||[];floats.forEach(f=>{f.y-=22*dt;f.t-=dt});state.floats=floats.filter(f=>f.t>0);
@@ -219,5 +223,5 @@
     // Light follow gives the hero a readable focal glow without flattening the night palette.
     warm.position.set(pp.x+35,62,pp.z-15);frame++;renderer.render(scene,camera);
   }
-  window.Echoes3D={render,renderer,scene,version:'0.8.0',get heroRigLoaded(){return !!player.userData.authoredRig;}};
+  window.Echoes3D={render,renderer,scene,version:'0.9.0',get loadedEnemyVariants(){return [...assetState.enemyTemplates.keys()]},get heroRigLoaded(){return !!player.userData.authoredRig;}};
 })();

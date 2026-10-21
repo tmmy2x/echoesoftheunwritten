@@ -1,44 +1,39 @@
-# Echoes of the Unwritten — Milestone 0.8.0
+# Echoes of the Unwritten — Milestone 0.9.0
 
-**The Living Archive: Chapter III renderer recovery + authored asset integration**
+**The Art Foundry: dedicated enemy variants, animated node rigs, modular environment polish, and mobile LOD/performance controls.**
 
-A browser-based single-player action RPG prototype. This build fixes the Chapter III black-screen failure and moves runtime enemy/environment rendering to an asset-first pipeline using the included GLB models.
+This is a browser-based single-player action RPG alpha. It builds on the Chapter III renderer fix from 0.8.0.
 
 ## Install on GitHub Pages
 
-1. Back up your existing repository files.
+1. Back up your repository files.
 2. Extract this ZIP.
-3. Upload/replace `index.html`, `styles.css`, `game.js`, and `world3d.js` at the repository root.
-4. Upload the entire `assets/` folder, preserving its paths.
+3. Replace `index.html`, `styles.css`, `game.js`, and `world3d.js` at the repository root.
+4. Upload the entire `assets/` folder, preserving paths.
 5. Commit the changes and wait for Pages to deploy.
-6. Open the existing site URL. Do **not** clear browser storage; save migration retains existing campaign state.
+6. Keep your existing browser storage; do not clear your save.
+
+## New in 0.9.0
+
+- Separate authored GLB designs for Margin Wraith, Ink Stalker, and Clockbound Sentinel enemy families.
+- Runtime articulated node animation for enemy limbs, quills, crests, runes, and armor accents.
+- Authored modular ruins kit expanded with broken buttresses, rune altar, and archive column base.
+- Distance-based detail LOD hides decorative mesh parts when far from the player.
+- Mobile quality profile caps device pixel ratio, disables realtime shadows, and limits active particle rendering.
+- Existing authored hero rig and animation clips remain integrated.
 
 ## Controls
 
 - WASD / arrow keys: move.
 - Click/tap: target or navigate, depending on context.
 - Space / Attack: basic attack.
-- Q / E / R: class skills.
-- E or the on-screen interaction button: interact with nearby NPCs, gates, and quest objects.
-- Skills, inventory, and class menus are available from the combat bar.
+- Q / E / R: active class skills.
+- Touch controls are shown on narrow/mobile screens.
 
-## Chapter III fix
+## Asset and browser notes
 
-The archive scene previously referenced undefined materials (`archiveGround`, `archiveStone`, and `ink`, as well as the rose accent material). When Chapter III activated, the 3D terrain builder threw while creating the new zone. The undefined archive materials are now explicitly defined. A render-error recovery path also reveals the 2D canvas if WebGL rendering throws, instead of leaving a blank black canvas.
+The included GLB files are original stylized low-poly assets created for this project, not third-party marketplace downloads. The player model has a skinned rig and clips; the enemy variants use authored named scene nodes with runtime articulation, not motion-capture or full skeletal animation clips. Three.js and GLTFLoader are loaded from a CDN, so first load requires an internet connection.
 
-## Art and runtime pipeline
+## Test checklist
 
-- `assets/characters/unwritten_hero.glb`: skinned hero with Idle, Run, Attack, Cast, Hit, and Death clips.
-- `assets/enemies/margin_wraith_design.glb`: authored enemy model used as the preferred runtime enemy visual. Enemy variants receive zone/class palette treatment, scale variation, hovering, and quill motion.
-- `assets/environment/modular_ruins_kit.glb`: authored floor tiles, pillar modules, arch pieces, rift gate frame, and crystal cluster used by the environment builder.
-- If the GLTF loader or a local asset request fails, a lightweight primitive fallback remains available so the game remains playable.
-
-Three.js and GLTFLoader are loaded from jsDelivr in `index.html`; an internet connection is required for those libraries. The GLB assets themselves are bundled locally in `assets/`.
-
-## Save data
-
-The game uses `localStorage` key `echoes_unwritten_save_v1`. Version 7 preserves the existing campaign state and migrates older save envelopes. Do not clear browser site data during an update.
-
-## Honest scope note
-
-This is an evolving 3D alpha, not a finished AAA production. The included hero is rigged and has authored animation clips. The included enemy and modular environment GLBs are original authored assets; the enemy has animated runtime motion but is not yet a full skinned/mocap creature rig. Future milestones can replace/augment the current enemy family with dedicated rigged variants and add more bespoke environment packs.
+See `QA_RESULTS.md`. Validate on a desktop browser and a real mobile browser; automated static checks cannot guarantee GPU/browser behavior across devices.
