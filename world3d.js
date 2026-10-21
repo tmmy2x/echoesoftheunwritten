@@ -37,13 +37,17 @@
   };
   // Asset-first pipeline: the authored GLB models and modular kit are loaded once and reused.
   // Procedural meshes remain only as an offline/CDN failure fallback, never as the preferred art path.
-  const assetState={loader:null,enemyTemplate:null,enemyTemplates:new Map(),modules:null,loaded:false};
+  const assetState={loader:null,enemyTemplate:null,enemyTemplates:new Map(),modules:null,loaded:false,pbr:null};
+  // Original 1K physically based material set: albedo (sRGB), tangent-space normal, roughness and metalness.
+  function loadPBRMaterials(){const L= new THREE.TextureLoader();const maps={};[['map','obsidian_albedo.png',true],['normalMap','obsidian_normal.png',false],['roughnessMap','obsidian_roughness.png',false],['metalnessMap','obsidian_metalness.png',false]].forEach(([key,file,srgb])=>{const t=L.load('assets/materials/'+file);t.wrapS=t.wrapT=THREE.RepeatWrapping;t.repeat.set(2,2);if(srgb)t.colorSpace=THREE.SRGBColorSpace;maps[key]=t;});assetState.pbr=maps;}
+  loadPBRMaterials();
+  function applyPBR(root){if(!assetState.pbr)return;root.traverse(o=>{if(!o.isMesh||!o.material)return;const apply=m=>{if(!m.isMeshStandardMaterial&&!m.isMeshPhysicalMaterial)return m;const c=m.clone();c.map=assetState.pbr.map;c.normalMap=assetState.pbr.normalMap;c.roughnessMap=assetState.pbr.roughnessMap;c.metalnessMap=assetState.pbr.metalnessMap;c.normalScale=new THREE.Vector2(.65,.65);c.roughness=.78;c.metalness=.22;c.needsUpdate=true;return c;};o.material=Array.isArray(o.material)?o.material.map(apply):apply(o.material);});}
   function beginAssetLoads(){
     const Loader=window.EchoesGLTFLoader;if(!Loader)return;
     const loader=new Loader();assetState.loader=loader;
     const enemyAssets=[['margin','assets/enemies/margin_wraith_design.glb'],['stalker','assets/enemies/ink_stalker.glb'],['sentinel','assets/enemies/clockbound_sentinel.glb']];
     enemyAssets.forEach(([key,url])=>loader.load(url,gltf=>{
-      const template=gltf.scene;template.name='Authored_'+key+'_Template';
+      const template=gltf.scene;template.name='Authored_'+key+'_Template';applyPBR(template);
       template.traverse(o=>{if(o.isMesh){o.castShadow=!mobileQuality;o.receiveShadow=!mobileQuality;if(o.material){o.material=o.material.clone();o.material.side=THREE.DoubleSide;}}});
       assetState.enemyTemplates.set(key,template);if(key==='margin')assetState.enemyTemplate=template;
       maps.enemies.forEach(m=>scene.remove(m));maps.enemies.clear();
@@ -103,7 +107,7 @@
     try{
       const loader=new Loader();
       loader.load('assets/characters/unwritten_hero.glb',gltf=>{
-        const model=gltf.scene; model.name='AuthoredUnwrittenHero'; model.scale.setScalar(1.0); model.position.set(0,0,0);
+        const model=gltf.scene; applyPBR(model); model.name='AuthoredUnwrittenHero'; model.scale.setScalar(1.0); model.position.set(0,0,0);
         player.add(model); (player.userData.proceduralBody||[]).forEach(part=>{part.visible=false;});
         heroMixer=new THREE.AnimationMixer(model);
         gltf.animations.forEach(clip=>{heroActions[clip.name]=heroMixer.clipAction(clip);});
@@ -247,5 +251,5 @@
     if(mobileQuality&&frame%120===0){let ratio=renderer.getPixelRatio();if(frameCostAvg>24)ratio=Math.max(.75,ratio-.1);else if(frameCostAvg<15)ratio=Math.min(1.1,ratio+.05);if(Math.abs(ratio-renderer.getPixelRatio())>.01){renderer.setPixelRatio(ratio);renderer.setSize(w,h,false)}}
     const now=performance.now();if(now-perfSampleStart>=1000){perfStats={fps:Math.round(perfSampleFrames*1000/(now-perfSampleStart)),frameMs:Math.round(frameCostAvg*10)/10,drawCalls:renderer.info.render.calls,triangles:renderer.info.render.triangles,pixelRatio:renderer.getPixelRatio(),quality:mobileQuality?'mobile-adaptive':'desktop'};perfSampleStart=now;perfSampleFrames=0;}
   }
-  window.Echoes3D={render,renderer,scene,version:'1.0.0',get loadedEnemyVariants(){return [...assetState.enemyTemplates.keys()]},get heroRigLoaded(){return !!player.userData.authoredRig;},get performanceStats(){return {...perfStats,enemyVariants:[...assetState.enemyTemplates.keys()],modulesLoaded:!!assetState.modules};}};
+  window.Echoes3D={render,renderer,scene,version:'1.0.0',get loadedEnemyVariants(){return [...assetState.enemyTemplates.keys()]},get heroRigLoaded(){return !!player.userData.authoredRig;},get performanceStats(){return {...perfStats,enemyVariants:[...assetState.enemyTemplates.keys()],modulesLoaded:!!assetState.modules,pbrMaps:assetState.pbr?['albedo','normal','roughness','metalness']:[],rendererInfo:{geometries:renderer.info.memory.geometries,textures:renderer.info.memory.textures},userAgent:navigator.userAgent};},getDeviceReport(){return {capturedAt:new Date().toISOString(),userAgent:navigator.userAgent,viewport:{width:innerWidth,height:innerHeight,dpr:devicePixelRatio},webgl:renderer.capabilities.isWebGL2?'WebGL2':'WebGL1',maxTextureSize:renderer.capabilities.maxTextureSize,stats:{...perfStats},memory:{...renderer.info.memory},render:{...renderer.info.render},loadedEnemyVariants:[...assetState.enemyTemplates.keys()],heroRigLoaded:!!player.userData.authoredRig,pbrMaps:assetState.pbr?['albedo','normal','roughness','metalness']:[]};},downloadDeviceReport(){const blob=new Blob([JSON.stringify(this.getDeviceReport(),null,2)],{type:'application/json'});const a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download='echoes-device-profile.json';a.click();setTimeout(()=>URL.revokeObjectURL(a.href),1000);}};
 })();

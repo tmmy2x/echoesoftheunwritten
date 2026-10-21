@@ -24,3 +24,11 @@
 - JavaScript syntax checked with Node.js (`node --check`) for `game.js` and `world3d.js`.
 - Existing game logic and local-save key preserved.
 - Visual playtest: not performed in a real browser in this build environment. Validate the world in GitHub Pages after deployment, especially mobile performance and landmark placement.
+
+
+## 1.2.0 additions
+- Generated and included 1024x1024 PBR albedo, tangent normal, roughness and metalness maps.
+- Added runtime application to loaded hero/enemy standard materials.
+- Added `window.Echoes3D.getDeviceReport()` and `window.Echoes3D.downloadDeviceReport()` diagnostics.
+- Device profiling instrumentation is present, but real-device measurements are not claimed because no physical target device was available in the build environment.
+- Enemy assets still use articulated node rigs, not full skinned skeletal rigs; see `DEVICE_PROFILING.md`.

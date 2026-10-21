@@ -40,3 +40,7 @@ Replace the files in your GitHub Pages repository with the contents of this fold
 
 ### Honest scope note
 The new meshes are original stylized geometry and a significant upgrade over simple blockout scenery, but they are not photogrammetry or a full studio AAA asset pipeline. Dedicated skeletal enemy rigs, high-end PBR texture maps, and real-device profiling remain future production work.
+
+
+## Build 1.2.0: PBR & profiling
+Includes original 1K albedo, normal, roughness and metalness maps applied to supported hero/enemy materials, plus device diagnostics (`window.Echoes3D.downloadDeviceReport()`). See `DEVICE_PROFILING.md` for profiling steps and explicit asset/rig status.

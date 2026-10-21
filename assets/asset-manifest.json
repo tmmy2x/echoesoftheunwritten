@@ -1,5 +1,5 @@
 {
-  "version": "1.1.0",
+  "version": "1.2.0",
   "artDirection": "The Unwritten: monumental gothic fantasy architecture, carved stonework, metallic filigree, cyan arcane conduits, rose corruption, cinematic MMO-scale silhouettes.",
   "assets": [
     {
@@ -86,10 +86,22 @@
       ],
       "license": "Original procedural geometry authored for Echoes of the Unwritten",
       "note": "Expanded sculptural modules use layered architectural forms, inlaid rune accents, metal trims, and distinct vertex-color materials; reused at scale for region silhouettes and landmarks."
+    },
+    {
+      "id": "obsidian-pbr-material-set",
+      "path": "assets/materials/",
+      "format": "PNG texture maps",
+      "maps": [
+        "obsidian_albedo.png (1024x1024 sRGB)",
+        "obsidian_normal.png (1024x1024 tangent-space normal)",
+        "obsidian_roughness.png (1024x1024 linear)",
+        "obsidian_metalness.png (1024x1024 linear)"
+      ],
+      "license": "Original generated material maps for Echoes of the Unwritten"
     }
   ],
-  "milestone": "1.1.0",
-  "release_name": "The Grand Spires \u2014 High-Fidelity Environment Pass",
+  "milestone": "1.2.0",
+  "release_name": "The Living Relics \u2014 PBR Materials & Device Diagnostics",
   "hud": {
     "layout": "fullscreen-overlay",
     "design_direction": "original MMORPG HUD blending compact raid-style hotbars with quest tracking and translucent panels",
@@ -99,7 +111,9 @@
     "adaptive_mobile_pixel_ratio": true,
     "distance_based_detail_lod": true,
     "stats_api": "window.Echoes3D.performanceStats",
-    "environment_detail": "Merged low-draw-call modular meshes; distance-based scene density and mobile reduced counts"
+    "environment_detail": "Merged low-draw-call modular meshes; distance-based scene density and mobile reduced counts",
+    "device_report_api": "window.Echoes3D.downloadDeviceReport()",
+    "device_profile": "Captures browser/device, WebGL capability, renderer memory, render counts, active asset variants and recent frame metrics. Real-device results must be collected on target hardware."
   },
   "campaign": {
     "chapter_4": "The First Dawn",
