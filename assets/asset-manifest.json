@@ -1,0 +1,56 @@
+{
+  "version": "0.7.0",
+  "artDirection": "The Unwritten: ink-black layered armor, pale cyan seams, rose-red author corruption, faceted silhouettes.",
+  "assets": [
+    {
+      "id": "unwritten-hero",
+      "path": "assets/characters/unwritten_hero.glb",
+      "format": "glb",
+      "kind": "skinned-character",
+      "animations": [
+        "Idle",
+        "Run",
+        "Attack",
+        "Cast"
+      ],
+      "license": "Original generated asset for Echoes of the Unwritten"
+    },
+    {
+      "id": "enemy-pipeline",
+      "path": "assets/enemies/README.md",
+      "format": "documentation",
+      "kind": "enemy-asset-spec"
+    },
+    {
+      "id": "environment-pipeline",
+      "path": "assets/environment/README.md",
+      "format": "documentation",
+      "kind": "modular-environment-spec"
+    },
+    {
+      "id": "margin-wraith-design",
+      "path": "assets/enemies/margin_wraith_design.glb",
+      "format": "glb",
+      "kind": "bespoke-enemy-design",
+      "license": "Original generated asset for Echoes of the Unwritten",
+      "note": "Reference/preview model; runtime enemy behavior still uses the live enemy entity renderer."
+    },
+    {
+      "id": "modular-ruins-kit",
+      "path": "assets/environment/modular_ruins_kit.glb",
+      "format": "glb",
+      "kind": "modular-environment-pack",
+      "modules": [
+        "Pillar_Shaft",
+        "Pillar_Capital",
+        "Fractured_Arch_Left",
+        "Fractured_Arch_Right",
+        "Fractured_Arch_Lintel",
+        "Rift_Gate_Frame",
+        "Archive_Floor_Tile",
+        "Cyan_Crystal_Cluster_Core"
+      ],
+      "license": "Original generated asset for Echoes of the Unwritten"
+    }
+  ]
+}

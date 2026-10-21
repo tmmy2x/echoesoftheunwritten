@@ -1,4 +1,4 @@
-/* Echoes of the Unwritten — procedural 3D world renderer, build 0.6.0
+/* Echoes of the Unwritten — 3D world renderer, build 0.7.0 with skinned GLB art pipeline
    Three.js is loaded from jsDelivr by index.html. All meshes are original procedural geometry. */
 (() => {
   'use strict';
@@ -60,12 +60,38 @@
     g.userData.limbs={legL,legR,armL,armR};
     const sword=box(g,15,25,0,2,28,3,mats.gold,.12);sword.position.x=13;sword.position.z=1;
     const blade=mesh(new THREE.ConeGeometry(2.5,10,4),mats.cyan,g);blade.position.set(13,44,1);blade.rotation.z=Math.PI;
+    g.userData.proceduralBody=g.children.slice();
     playerAura=ring(g,16,1.1,mats.violet);playerAura.position.y=2;
     slashRing=ring(g,28,.9,mats.cyan);slashRing.position.y=13;slashRing.visible=false;
     g.userData.sword=sword;g.userData.blade=blade;g.userData.visor=visor;g.userData.cloak=cloak;
     return g;
   }
   player=makePlayer();scene.add(player);
+  // Load the authored, skinned GLB character when GLTFLoader is available. The
+  // procedural character remains as a resilient fallback if the asset/CDN fails.
+  let heroMixer=null, heroActions={}, heroActionName='';
+  function playHeroAction(name,fade=.16){
+    if(!heroMixer||!heroActions[name]||heroActionName===name)return;
+    const next=heroActions[name]; next.reset().play();
+    if(heroActionName&&heroActions[heroActionName])heroActions[heroActionName].crossFadeTo(next,fade,false);
+    heroActionName=name;
+  }
+  function loadAuthoredHero(){
+    const Loader=window.EchoesGLTFLoader; if(!Loader||player.userData.authoredRig||player.userData.authoredRigLoading)return;
+    player.userData.authoredRigLoading=true;
+    try{
+      const loader=new Loader();
+      loader.load('assets/characters/unwritten_hero.glb',gltf=>{
+        const model=gltf.scene; model.name='AuthoredUnwrittenHero'; model.scale.setScalar(1.0); model.position.set(0,0,0);
+        player.add(model); (player.userData.proceduralBody||[]).forEach(part=>{part.visible=false;});
+        heroMixer=new THREE.AnimationMixer(model);
+        gltf.animations.forEach(clip=>{heroActions[clip.name]=heroMixer.clipAction(clip);});
+        playHeroAction('Idle',0); player.userData.authoredRig=true; player.userData.authoredRigLoading=false;
+      },undefined,error=>{player.userData.authoredRigLoading=false;console.warn('Authored hero GLB could not load; procedural character remains active.',error);});
+    }catch(error){player.userData.authoredRigLoading=false;console.warn('GLB pipeline unavailable; using procedural hero.',error);}
+  }
+  if(window.EchoesGLTFLoader)loadAuthoredHero();else window.addEventListener('echoes-gltf-loader-ready',loadAuthoredHero,{once:true});
+
   function makeWisp(e){
     const g=new THREE.Group();const boss=e.type==='boss'||e.type==='authorBoss';const author=e.type==='authorBoss';const city=e.type==='wraith';
     const core=sphere(g,0,boss?(author?38:30):18,0,boss?(author?23:18):10,boss?(author?mats.rose:mats.red):(city?mats.crystal:mats.ghost),12);
@@ -156,8 +182,8 @@
     const p=state.player||{x:900,y:700,faceX:1,faceY:0};const pp=pos(p.x,p.y,0);player.position.set(pp.x,0,pp.z);player.rotation.y=Math.atan2(p.faceX,p.faceY);
     playerAura.material=state.className==='Dawnbreaker'?mats.gold:state.className==='Hollowkeeper'?mats.crystal:mats.violet;
     playerAura.rotation.z=state.tick*.9;playerAura.scale.setScalar(1+Math.sin(state.tick*3)*.08);
-    player.userData.cloak.scale.y=1+Math.sin(state.tick*5)*.035;const gait=Math.min(1,Math.hypot(p.vx||0,p.vy||0)/40);const limbs=player.userData.limbs;if(limbs){const swing=Math.sin(state.tick*10)*.55*gait;limbs.legL.rotation.x=swing;limbs.legR.rotation.x=-swing;limbs.armL.rotation.x=-swing*.7;limbs.armR.rotation.x=swing*.7;}if(p.attack>0){player.userData.sword.rotation.z=-Math.sin((p.attack/.32)*Math.PI)*.85;}else player.userData.sword.rotation.z=0;
-    player.userData.visor.material=state.className==='Dawnbreaker'?mats.gold:state.className==='Paradoxist'?mats.crystal:state.className==='Hollowkeeper'?mats.ghost:mats.cyan;
+    if(player.userData.cloak)player.userData.cloak.scale.y=1+Math.sin(state.tick*5)*.035;const gait=Math.min(1,Math.hypot(p.vx||0,p.vy||0)/40);const limbs=player.userData.limbs;if(limbs){const swing=Math.sin(state.tick*10)*.55*gait;limbs.legL.rotation.x=swing;limbs.legR.rotation.x=-swing;limbs.armL.rotation.x=-swing*.7;limbs.armR.rotation.x=swing*.7;}if((p.hitTimer||0)>0){playHeroAction('Hit',.05);}else if(p.attack>0){if(player.userData.sword)player.userData.sword.rotation.z=-Math.sin((p.attack/.32)*Math.PI)*.85;playHeroAction('Attack',.07);}else if((p.castTimer||0)>0){if(player.userData.sword)player.userData.sword.rotation.z=0;playHeroAction('Cast',.09);}else{if(player.userData.sword)player.userData.sword.rotation.z=0;playHeroAction(gait>.12?'Run':'Idle',.18);}if(heroMixer)heroMixer.update(dt);
+    if(player.userData.visor)player.userData.visor.material=state.className==='Dawnbreaker'?mats.gold:state.className==='Paradoxist'?mats.crystal:state.className==='Hollowkeeper'?mats.ghost:mats.cyan;
     player.visible=!(p.invuln>0&&Math.floor(state.tick*20)%2===0);
     slashRing.visible=(p.slash||0)>0;slashRing.rotation.z=state.tick*2;slashRing.material=state.className==='Dawnbreaker'?mats.gold:mats.cyan;slashRing.scale.setScalar(1+Math.max(0,p.slash||0)*1.8);
     const forward=pos(p.x+(p.faceX||0)*95,p.y+(p.faceY||0)*95,0);
@@ -166,5 +192,5 @@
     // Light follow gives the hero a readable focal glow without flattening the night palette.
     warm.position.set(pp.x+35,62,pp.z-15);frame++;renderer.render(scene,camera);
   }
-  window.Echoes3D={render,renderer,scene,version:'0.6.0'};
+  window.Echoes3D={render,renderer,scene,version:'0.7.0',get heroRigLoaded(){return !!player.userData.authoredRig;}};
 })();

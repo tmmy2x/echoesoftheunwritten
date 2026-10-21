@@ -43,3 +43,10 @@ The current milestone uses custom procedural geometry so the game remains lightw
 - `name_vault_environment.glb` — boss arena, floating archive shelves, and rune props.
 
 Each imported asset must have a recorded source, license, polygon/texture budget, rig/clip naming contract, fallback mesh, and mobile performance check. Prefer original commissioned models or clearly licensed packs; do not ship assets whose redistribution rights are unclear.
+
+## Milestone 0.7.0 — authored asset pipeline
+
+- **Playable hero:** `assets/characters/unwritten_hero.glb` — original low-poly skinned hero, named joints, PBR materials, and Idle/Run/Attack/Cast/Hit/Death clips. This is the first imported skinned model; procedural fallback remains available.
+- **Margin Wraith design:** `assets/enemies/margin_wraith_design.glb` — original silhouette reference with ink mantle, core, and quills. Live combat entity rendering remains driven by the existing runtime renderer in this milestone.
+- **Modular Ruins Kit:** `assets/environment/modular_ruins_kit.glb` — named pillar, arch, rift frame, floor tile, and crystal modules for future region assembly.
+- **Style:** low-poly stylization with deliberate silhouette readability, ink-black cloth, slate armor, cyan hero seams, and rose-red Author corruption. Future purchased/downloaded assets must be license-checked and reworked to this art direction.
