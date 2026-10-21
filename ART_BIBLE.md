@@ -1,30 +1,23 @@
-# Echoes of the Unwritten — Art Bible 0.9.0
+# Echoes of the Unwritten — Art & UI Bible 1.0.0
 
-## Visual identity
+## Visual thesis
+A dark, surreal fantasy with fractured stone, ink-black silhouettes, cyan and violet anomaly light, rose-red reality corruption, and restrained parchment-gold interface accents. Readability and silhouette clarity take priority over visual noise.
 
-- **Silhouette:** tall, asymmetric, layered forms; negative space between appendages; readable at small screen sizes.
-- **Palette:** ink-black and bruised violet foundations; memory cyan for neutral/old magic; author rose for corruption; muted gold for ancient machinery.
-- **Materials:** matte obsidian, worn archive stone, satin metal, emissive inlays; emissive surfaces are accents rather than full-surface glow.
-- **World language:** fractured flagstones, monumental arches, suspended crystals, rune altars, repeated vertical pillars, and broken buttresses.
+## HUD direction
+Original interface inspired by the information hierarchy of large-scale MMORPGs: compact character vitals and tracked quest on the left, target/location readout near the upper center, field intel/minimap on the right, and a centered action hotbar along the bottom. Use translucent dark glass panels, fine gold/cyan borders, small monospaced labels, and high-contrast health/essence bars. The world remains full-screen behind the interface; no major gameplay region is reserved for side columns.
 
-## Enemy families
+## Character / enemy silhouette rules
+- Unwritten hero: narrow, angular cloak silhouette, cyan weapon accents and class-dependent aura.
+- Margin Wraith: floating ink mantle, rose quills, unstable hover.
+- Ink Stalker: lean silhouette, cyan crest and blade-like arms; faster enemy identity.
+- Clockbound Sentinel: heavier armor, gold runes, wider stance and slow, readable attacks.
+- The Unwritten Author: oversized layered silhouette, orbiting quills, rose core and clearly telegraphed reality-correction attack.
 
-- **Margin Wraith:** floating page-haunt with mantle, mask, six quills, and long arms. Default low-tier enemy.
-- **Ink Stalker:** lean hunter with blade arms, long legs, mask, and a cyan crest. Used for wraith/redaction variants.
-- **Clockbound Sentinel:** heavier elite with chest plate, crest, rune nodes, armored shoulders, and gold/rose accents.
-- **The Unwritten Author:** boss treatment remains larger and rose-corrupted; its warning telegraph must remain visible and readable.
+## Environment kit
+Broken archive arches, modular pillars, fractured floor tiles, rune altars, rift frames and luminous crystal clusters. Keep navigation lanes readable and avoid placing high-contrast decorative clutter on combat surfaces.
 
 ## Animation language
+Movement has clear anticipation and follow-through; attacks use short wind-up and recoil; hit reactions should be readable but not obscure the target; boss attacks have a visible warning phase before impact. Existing hero GLB uses named animation clips. Enemy art currently combines bespoke meshes with procedural scene-node articulation; future production should add full skeletal rigs and dedicated attack/hit/stagger/death clips.
 
-Enemy animation is procedural node articulation: alternating limb swings, quill/crown sway, hover bob, hit scale response, and telegraph rings. The hero retains a skinned GLB and named Idle/Run/Attack/Cast/Hit/Death clips when available. This milestone does not claim motion capture or film-quality animation.
-
-## Modular environment
-
-Reuse named kit modules: Archive_Floor_Tile, Pillar_Shaft, Pillar_Capital, Fractured_Arch_Left, Fractured_Arch_Right, Fractured_Arch_Lintel, Rift_Gate_Frame, Cyan_Crystal_Cluster_Core, Broken_Buttress, Rune_Altar, Archive_Column_Base. Avoid random placement that blocks objective routes or player navigation.
-
-## Performance rules
-
-- Desktop: antialiasing and shadows enabled where supported; pixel ratio capped at 1.6.
-- Mobile: antialiasing/shadows disabled; pixel ratio capped at 1.1; fewer particles; hide decorative details beyond the near LOD radius.
-- Prefer shared geometries and cloned materials over cloning geometry for every module.
-- Always preserve readable quest markers and enemy telegraphs even when decorative LOD is hidden.
+## Performance constraints
+Use distance-based detail reduction, shared geometry/materials where possible, limited particle counts, lower mobile pixel ratio and reduced mobile shadows. Validate real frame times on physical devices before declaring a performance target met.

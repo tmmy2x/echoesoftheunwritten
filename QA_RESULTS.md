@@ -1,27 +1,28 @@
-# Milestone 0.9.0 QA Results
+# QA Results — Milestone 1.0.0
 
-## Automated checks completed
+## Automated checks performed
+- `node --check game.js` — passed.
+- `node --check world3d.js` — passed.
+- All bundled GLB files have valid glTF 2.0 magic/version/declared length headers — passed.
+- Full-screen fixed world canvas and overlay HUD styles are present — passed.
+- Responsive mobile HUD and safe-area rules are present — passed.
+- Chapter IV unlock, objective tracking, fragment collection and return-to-Scribe quest branches are present — passed.
+- Save migration accepts versions 1–8 and writes version 8 — passed.
+- Adaptive mobile pixel-ratio logic and runtime performance-stat API are present — passed.
+- Existing asset-first GLB pipeline and distance-based detail LOD remain present — passed.
+- ZIP integrity — verified at packaging time.
 
-1. `node --check game.js` passes.
-2. `node --check world3d.js` passes.
-3. Three distinct enemy GLB files are included: Margin Wraith, Ink Stalker, Clockbound Sentinel.
-4. Each enemy GLB parses as a valid GLB container with a JSON chunk and named nodes.
-5. Renderer loads each enemy variant by key and selects variants based on enemy type.
-6. Enemy node animation covers arms, legs, quills, crests, pauldrons, and rune accents.
-7. Detail LOD hides decorative mesh nodes at distance.
-8. Mobile profile caps pixel ratio at 1.1, disables renderer shadows, and caps rendered particles at 100.
-9. Modular kit includes floor, pillars, arch pieces, gate frame, crystal, buttress, altar, and column base.
-10. `index.html` labels the game as 3D alpha 0.9.0.
-11. All expected game and asset paths exist.
-12. ZIP integrity test passes.
+## Manual acceptance checklist
+1. On desktop, verify the 3D world fills the viewport and HUD panels sit over the world rather than in surrounding columns.
+2. Verify left character/quest panel, right minimap/field intel, top location strip, target bar and bottom combat hotbar remain readable at 1366×768 and 1920×1080.
+3. Move and fight while the HUD is visible; confirm controls and click-to-move remain functional where the HUD does not cover the scene.
+4. On iPhone Safari, verify safe-area padding, joystick, action buttons, hotbar and panels fit without covering the entire playfield; check portrait and landscape.
+5. Load an existing save. A Chapter III-complete save should migrate to Chapter IV: The First Dawn if it had not already started the next quest.
+6. Complete the Author epilogue, collect three First-Light Fragments, return to the Blind Scribe and confirm Chapter IV completion/rewards persist after reload.
+7. Inspect `window.Echoes3D.performanceStats` in DevTools and record FPS/frame cost on desktop and a real mobile device.
+8. Confirm the authored hero/enemy/environment assets load from GitHub Pages paths; CDN or WebGL failures should be noted separately.
 
-## Manual browser tests still required
-
-- Deploy on GitHub Pages and verify Chapter III remains playable with a pre-existing save.
-- Confirm GLTFLoader can fetch all three enemy GLBs from the deployed site.
-- Fight at least one enemy of each family and confirm the silhouettes and articulation.
-- Verify the Author boss warning ring remains visible and combat stays responsive.
-- Test desktop at a normal resolution and mobile Safari/Android Chrome; inspect frame rate, camera, touch controls, and memory use.
-- Test with a slow connection and confirm the existing renderer fallback remains usable if a model fails to load.
-
-**Scope note:** automated checks here validate syntax, asset structure, wiring, and package integrity. They are not a substitute for an actual GPU/browser performance session. Enemy GLBs are articulated node-rig assets animated at runtime; they are not full skeletal/motion-capture animation sets.
+## Known limits
+- No automated real-device FPS benchmark was available during packaging.
+- Enemy variants still use authored GLB meshes with runtime node articulation rather than complete skeletal animation clip libraries.
+- Chapter IV is a new quest arc within the Archive zone; the Garden of First Light is teased as future content, not yet a separate explorable zone.

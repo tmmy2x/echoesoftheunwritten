@@ -71,5 +71,24 @@
       "runtime": "Selected for elite and heavy enemy variants; arms, crest, and runes animate at runtime.",
       "license": "Original generated asset for Echoes of the Unwritten"
     }
-  ]
+  ],
+  "milestone": "1.0.0",
+  "release_name": "The First Dawn \u2014 Immersive HUD and Campaign Expansion",
+  "hud": {
+    "layout": "fullscreen-overlay",
+    "design_direction": "original MMORPG HUD blending compact raid-style hotbars with quest tracking and translucent panels",
+    "mobile_safe_area": true
+  },
+  "performance": {
+    "adaptive_mobile_pixel_ratio": true,
+    "distance_based_detail_lod": true,
+    "stats_api": "window.Echoes3D.performanceStats"
+  },
+  "campaign": {
+    "chapter_4": "The First Dawn",
+    "objectives": [
+      "Recover three first-light fragments",
+      "Return to the Blind Scribe"
+    ]
+  }
 }

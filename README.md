@@ -1,39 +1,32 @@
-# Echoes of the Unwritten — Milestone 0.9.0
+# Echoes of the Unwritten — Milestone 1.0.0
 
-**The Art Foundry: dedicated enemy variants, animated node rigs, modular environment polish, and mobile LOD/performance controls.**
+**The First Dawn: immersive fullscreen MMORPG-inspired HUD, adaptive 3D rendering, and Chapter IV.**
 
-This is a browser-based single-player action RPG alpha. It builds on the Chapter III renderer fix from 0.8.0.
+Browser-based single-player action RPG, deployable as a static site on GitHub Pages.
 
-## Install on GitHub Pages
-
+## Install / update
 1. Back up your repository files.
-2. Extract this ZIP.
-3. Replace `index.html`, `styles.css`, `game.js`, and `world3d.js` at the repository root.
-4. Upload the entire `assets/` folder, preserving paths.
-5. Commit the changes and wait for Pages to deploy.
-6. Keep your existing browser storage; do not clear your save.
+2. Extract this package.
+3. Replace `index.html`, `styles.css`, `game.js`, and `world3d.js` in the repository root.
+4. Upload the complete `assets/` folder, preserving paths.
+5. Commit and wait for GitHub Pages to deploy.
+6. Keep browser storage. Version 8 saves migrate earlier progress, including existing completed Chapter III saves.
 
-## New in 0.9.0
-
-- Separate authored GLB designs for Margin Wraith, Ink Stalker, and Clockbound Sentinel enemy families.
-- Runtime articulated node animation for enemy limbs, quills, crests, runes, and armor accents.
-- Authored modular ruins kit expanded with broken buttresses, rune altar, and archive column base.
-- Distance-based detail LOD hides decorative mesh parts when far from the player.
-- Mobile quality profile caps device pixel ratio, disables realtime shadows, and limits active particle rendering.
-- Existing authored hero rig and animation clips remain integrated.
+## What's new in 1.0.0
+- Full-viewport 3D world with translucent overlay HUD; game UI no longer lives in separate page columns.
+- Original HUD design direction combining compact MMO-style hotbars, character/quest panels, target health, minimap and field intel.
+- Responsive desktop/mobile layout, touch controls, safe-area handling and reduced-motion support.
+- Adaptive mobile render pixel ratio based on observed frame cost; exposes `window.Echoes3D.performanceStats` for live FPS, frame cost, draw calls, triangles, quality tier, loaded enemy variants and environment-kit status.
+- Enemy hit/strike reaction accents and distance-based decorative detail LOD.
+- Chapter IV: **The First Dawn**. After the Chapter III epilogue, recover three first-light fragments and return to the Blind Scribe for the next story reveal and rewards.
+- Save version 8 and migration of saves that had already completed Chapter III before this update.
 
 ## Controls
+- PC: WASD / arrows to move; click to target or navigate; Space/basic attack; Q/E/R class skills; E or interact control for nearby NPCs and objects.
+- Mobile: left virtual joystick and right action buttons; HUD is overlaid on the game view.
 
-- WASD / arrow keys: move.
-- Click/tap: target or navigate, depending on context.
-- Space / Attack: basic attack.
-- Q / E / R: active class skills.
-- Touch controls are shown on narrow/mobile screens.
+## Runtime / asset notes
+Three.js and GLTFLoader are loaded from jsDelivr. The browser needs internet access on first load. The hero GLB has a skinned rig and animation clips. Enemy GLBs are bespoke authored designs with runtime node articulation and hit/strike pose accents; they are not yet full skeletal animation rigs with motion-captured clips. Mobile adaptive quality is implemented, but measured frame-rate acceptance still needs testing on representative physical devices.
 
-## Asset and browser notes
-
-The included GLB files are original stylized low-poly assets created for this project, not third-party marketplace downloads. The player model has a skinned rig and clips; the enemy variants use authored named scene nodes with runtime articulation, not motion-capture or full skeletal animation clips. Three.js and GLTFLoader are loaded from a CDN, so first load requires an internet connection.
-
-## Test checklist
-
-See `QA_RESULTS.md`. Validate on a desktop browser and a real mobile browser; automated static checks cannot guarantee GPU/browser behavior across devices.
+## Validation
+See `QA_RESULTS.md`. Syntax, bundled asset structure, save migration markers, HUD overlay rules, chapter progression markers and package integrity are checked statically. Static checks do not replace live gameplay verification.
