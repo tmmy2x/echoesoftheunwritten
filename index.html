@@ -5,14 +5,14 @@
   <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no" />
   <meta name="theme-color" content="#0b0d17" />
   <meta name="description" content="Echoes of the Unwritten — a browser-based single-player action RPG with class-specific skill trees." />
-  <title>Echoes of the Unwritten</title>
+  <title>Echoes of the Unwritten — The Grand Spires</title>
   <link rel="stylesheet" href="styles.css" />
 </head>
 <body>
   <main id="app">
     <header class="topbar">
       <div class="brand-mark">✦</div>
-      <div class="brand-copy"><strong>ECHOES <span>OF THE UNWRITTEN</span></strong><small>SOLO CHRONICLES · 3D RELEASE CANDIDATE 1.0.0</small></div>
+      <div class="brand-copy"><strong>ECHOES <span>OF THE UNWRITTEN</span></strong><small>SOLO CHRONICLES · 3D ART UPGRADE 1.1.0</small></div>
       <div class="top-actions"><span class="save-indicator"><i></i> LOCAL SAVE</span><button id="menuBtn" class="icon-button" aria-label="Open menu">☰</button></div>
     </header>
     <section class="game-layout">
@@ -34,7 +34,7 @@
       </section>
       <aside class="right-panel panel"><div class="panel-heading">FIELD INTEL <span class="muted tiny">LIVE</span></div><div class="minimap"><canvas id="minimapCanvas" aria-label="Live minimap showing your position, enemies, and tracked objective"></canvas><div class="map-label">SHIVERWILD · LIVE</div></div><div class="intel-row"><span>Nearest anomaly</span><b id="nearestText">Unknown</b></div><div class="intel-row"><span>Local time</span><b id="clockText">--:--</b></div><div class="intel-row"><span>Event cycle</span><b id="cycleText">TIDE I</b></div><div class="panel-heading activity-heading">RECENT ECHOES <button id="clearLog" class="text-button">CLEAR</button></div><div id="activityLog" class="activity-log"><div class="log-entry"><span>✦</span><p><b>Archivist</b><br>The signal is stronger beyond the western arch.</p></div><div class="log-entry"><span>◈</span><p><b>World pulse</b><br>The Fracture Tide is active.</p></div></div><div class="right-footer"><span>✦ CHRONICLE SYNC</span><b id="syncState">READY</b></div></aside>
     </section>
-    <footer class="footer"><span>© ECHOES OF THE UNWRITTEN · 3D RELEASE CANDIDATE 1.0.0</span><span>ASSET PACKAGED · WEBGL REQUIRED <i></i> YOUR CHOICES SHAPE THIS WORLD</span></footer>
+    <footer class="footer"><span>© ECHOES OF THE UNWRITTEN · 3D ART UPGRADE 1.1.0</span><span>ASSET PACKAGED · WEBGL REQUIRED <i></i> YOUR CHOICES SHAPE THIS WORLD</span></footer>
   </main>
   <div id="modalBackdrop" class="modal-backdrop hidden"><section class="modal panel"><div class="modal-head"><div><small id="modalEyebrow">CHRONICLE</small><h2 id="modalTitle">Inventory</h2></div><button id="modalClose" class="icon-button">✕</button></div><div id="modalBody" class="modal-body"></div></section></div>
   <div id="mobileControls" class="mobile-controls"><div id="joystick" class="joystick"><div class="joy-knob"></div></div><div class="mobile-actions"><button data-mobile="attack">⚔</button><button data-mobile="q">Q</button><button data-mobile="e">E</button><button data-mobile="r">✦</button><button data-mobile="interact" aria-label="Interact with nearby object or character">F</button></div></div>

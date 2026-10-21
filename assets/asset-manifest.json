@@ -1,6 +1,6 @@
 {
-  "version": "0.9.0",
-  "artDirection": "The Unwritten: ink-black layered armor, pale cyan seams, rose-red author corruption, faceted silhouettes.",
+  "version": "1.1.0",
+  "artDirection": "The Unwritten: monumental gothic fantasy architecture, carved stonework, metallic filigree, cyan arcane conduits, rose corruption, cinematic MMO-scale silhouettes.",
   "assets": [
     {
       "id": "unwritten-hero",
@@ -70,10 +70,26 @@
       "kind": "distinct enemy node-rig",
       "runtime": "Selected for elite and heavy enemy variants; arms, crest, and runes animate at runtime.",
       "license": "Original generated asset for Echoes of the Unwritten"
+    },
+    {
+      "id": "grand-spires-environment-kit",
+      "path": "assets/environment/modular_ruins_kit.glb",
+      "format": "glb",
+      "kind": "high-detail modular environment kit",
+      "modules": [
+        "Grand_Spire",
+        "Ornate_Arch",
+        "Rune_Obelisk",
+        "Floating_Stone",
+        "Banner_Stand",
+        "Grand_Staircase"
+      ],
+      "license": "Original procedural geometry authored for Echoes of the Unwritten",
+      "note": "Expanded sculptural modules use layered architectural forms, inlaid rune accents, metal trims, and distinct vertex-color materials; reused at scale for region silhouettes and landmarks."
     }
   ],
-  "milestone": "1.0.0",
-  "release_name": "The First Dawn \u2014 Immersive HUD and Campaign Expansion",
+  "milestone": "1.1.0",
+  "release_name": "The Grand Spires \u2014 High-Fidelity Environment Pass",
   "hud": {
     "layout": "fullscreen-overlay",
     "design_direction": "original MMORPG HUD blending compact raid-style hotbars with quest tracking and translucent panels",
@@ -82,7 +98,8 @@
   "performance": {
     "adaptive_mobile_pixel_ratio": true,
     "distance_based_detail_lod": true,
-    "stats_api": "window.Echoes3D.performanceStats"
+    "stats_api": "window.Echoes3D.performanceStats",
+    "environment_detail": "Merged low-draw-call modular meshes; distance-based scene density and mobile reduced counts"
   },
   "campaign": {
     "chapter_4": "The First Dawn",

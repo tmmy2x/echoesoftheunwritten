@@ -21,3 +21,11 @@ Movement has clear anticipation and follow-through; attacks use short wind-up an
 
 ## Performance constraints
 Use distance-based detail reduction, shared geometry/materials where possible, limited particle counts, lower mobile pixel ratio and reduced mobile shadows. Validate real frame times on physical devices before declaring a performance target met.
+
+
+## Milestone 1.1.0 — The Grand Spires
+- Visual target: richer MMORPG environmental language inspired by the scale and ornamentation of premium fantasy MMOs, while maintaining original Echoes of the Unwritten shapes and palette.
+- New environment pieces: Grand Spire, Ornate Arch, Rune Obelisk, Floating Stone, Banner Stand, and Grand Staircase.
+- Existing modules rebuilt with layered stone courses, bevel-like stacked trims, metallic edge bands, glowing rune inlays, crystal focal points, and contrasting material zones.
+- Region build now places a distant skyline, floating relics, banners, stair monuments, and landmark architecture. Large pieces are merged meshes to avoid excessive draw calls.
+- These are bespoke game-ready stylized meshes, not licensed World of Warcraft/Final Fantasy XIV assets and not a claim of a finished AAA production art pipeline.

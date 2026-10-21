@@ -17,13 +17,13 @@
   renderer.setSize(Math.max(1,wrap.clientWidth), Math.max(1,wrap.clientHeight), false);
   renderer.shadowMap.enabled = !mobileQuality; renderer.shadowMap.type = THREE.PCFSoftShadowMap;
   renderer.outputColorSpace = THREE.SRGBColorSpace;
-  renderer.toneMapping = THREE.ACESFilmicToneMapping; renderer.toneMappingExposure = 1.12;
+  renderer.toneMapping = THREE.ACESFilmicToneMapping; renderer.toneMappingExposure = 1.2;
   const scene = new THREE.Scene();
   scene.background = new THREE.Color('#111827'); scene.fog = new THREE.FogExp2('#111827', .00112);
   const camera = new THREE.PerspectiveCamera(49, Math.max(1,wrap.clientWidth)/Math.max(1,wrap.clientHeight), .1, 2600);
-  const hemi = new THREE.HemisphereLight('#9aa9ff','#101722',2.0); scene.add(hemi);
-  const moon = new THREE.DirectionalLight('#c4ccff',3.0); moon.position.set(-280,500,-160); moon.castShadow=true; moon.shadow.mapSize.set(mobileQuality?512:1024,mobileQuality?512:1024); moon.shadow.camera.left=-430; moon.shadow.camera.right=430; moon.shadow.camera.top=430; moon.shadow.camera.bottom=-430; scene.add(moon);
-  const warm = new THREE.PointLight('#d9a8ff',85,430,2); warm.position.set(0,65,0); scene.add(warm);
+  const hemi = new THREE.HemisphereLight('#c4d2ff','#171321',2.35); scene.add(hemi);
+  const moon = new THREE.DirectionalLight('#d7dcff',3.4); moon.position.set(-280,500,-160); moon.castShadow=true; moon.shadow.mapSize.set(mobileQuality?512:1024,mobileQuality?512:1024); moon.shadow.camera.left=-430; moon.shadow.camera.right=430; moon.shadow.camera.top=430; moon.shadow.camera.bottom=-430; scene.add(moon);
+  const warm = new THREE.PointLight('#d9a8ff',105,520,2); warm.position.set(0,65,0); scene.add(warm);
   const world = {w:1800,h:1250}; const maps = {enemies:new Map(), objects:new Map(), particles:[]};
   let activeZone = '', terrain, scenery = new THREE.Group(), player, playerAura, slashRing, lastWidth=0,lastHeight=0, frame=0;
   let frameCostAvg=16.7, perfSampleStart=performance.now(), perfSampleFrames=0, perfStats={fps:0,frameMs:16.7,drawCalls:0,triangles:0,pixelRatio:renderer?.getPixelRatio?.()||1,quality:mobileQuality?'mobile':'desktop'};
@@ -183,6 +183,27 @@
       // Offline fallback for environments where the GLTF loader or asset request fails.
       for(let i=0;i<24;i++){const x=(rng(i+1)-.5)*(world.w-130),z=(rng(i+80)-.5)*(world.h-130);if(Math.abs(x)<105&&Math.abs(z)<100)continue;const h=city?24+rng(i+150)*58:18+rng(i+150)*43;const pillar=cylinder(terrain,x,h/2,z,5+rng(i+3)*5,7+rng(i+3)*5,h,city?mats.cityStone:mats.stone2,6);pillar.rotation.z=(rng(i+4)-.5)*.15;}
       for(let i=0;i<14;i++){const x=(rng(i+300)-.5)*(world.w-90),z=(rng(i+340)-.5)*(world.h-90);const c=mesh(new THREE.ConeGeometry(7+rng(i+400)*6,24+rng(i+410)*28,5),city?mats.crystal:mats.violet,terrain);c.position.set(x,12,z);}
+    }
+    // Showcase architecture pass: monumental silhouettes, ornate thresholds, floating relics,
+    // banners, and layered stairs give each region a deliberate MMO-scale skyline.
+    if(assetState.modules){
+      const spireCount=mobileQuality?7:11;
+      for(let i=0;i<spireCount;i++){
+        const x=(rng(i+610)-.5)*(world.w-150), z=(rng(i+680)-.5)*(world.h-150);
+        if(Math.abs(x)<190&&Math.abs(z)<165)continue;
+        cloneModule('Grand_Spire',terrain,x,0,z,(city?10.5:archive?9.2:8.2)+rng(i+700)*3,rng(i+720)*Math.PI*2);
+      }
+      for(let i=0;i<(mobileQuality?5:8);i++){
+        const x=(rng(i+810)-.5)*(world.w-120), z=(rng(i+850)-.5)*(world.h-120);
+        if(Math.abs(x)<160&&Math.abs(z)<150)continue;
+        cloneModule(i%3===0?'Ornate_Arch':i%3===1?'Rune_Obelisk':'Floating_Stone',terrain,x, i%3===2?12:0,z,i%3===2?2.8+rng(i+900)*1.5:5.2+rng(i+900)*2.3,rng(i+930)*Math.PI*2);
+      }
+      for(let i=0;i<6;i++){
+        const x=-world.w/2+180+i*290, z=world.h/2-115-(i%2)*55;
+        cloneModule('Banner_Stand',terrain,x,0,z,4.2,i%2?-.12:.12);
+      }
+      cloneModule('Grand_Staircase',terrain,city?0:world.w/2-205,0,city?145:125,14,city?0:Math.PI/2);
+      cloneModule('Rune_Obelisk',terrain,city?0:world.w/2-205,0,city?85:55,8.5,0);
     }
     // Zone-specific centerpiece, a broken observatory or a time-locked clock tower.
     const cx=city?0:world.w/2-190,cz=city?-20:0;

@@ -30,3 +30,13 @@ Three.js and GLTFLoader are loaded from jsDelivr. The browser needs internet acc
 
 ## Validation
 See `QA_RESULTS.md`. Syntax, bundled asset structure, save migration markers, HUD overlay rules, chapter progression markers and package integrity are checked statically. Static checks do not replace live gameplay verification.
+
+
+## Milestone 1.1.0 — The Grand Spires
+This release focuses on a substantial environmental art pass: a rebuilt 17-module architectural GLB kit, monumental spires, ornate arches, rune obelisks, floating stone relics, banner stands, grand stairs, stronger cinematic lighting, and more deliberate MMO-scale silhouettes. Existing story/save logic is preserved.
+
+### Deploy
+Replace the files in your GitHub Pages repository with the contents of this folder, preserving the `assets/` directory structure. Keep your browser local save; this release does not require clearing it.
+
+### Honest scope note
+The new meshes are original stylized geometry and a significant upgrade over simple blockout scenery, but they are not photogrammetry or a full studio AAA asset pipeline. Dedicated skeletal enemy rigs, high-end PBR texture maps, and real-device profiling remain future production work.
