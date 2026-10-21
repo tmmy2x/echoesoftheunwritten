@@ -1,58 +1,54 @@
-# Echoes of the Unwritten — Milestone 0.1.0
+# Echoes of the Unwritten — Milestone 0.2.0
 
-A playable, browser-based, single-player action RPG prototype. No build tools or server are required for the current milestone.
+**The Living World Update** · Browser-based single-player RPG prototype
 
-## Play locally
+## What's new in 0.2.0
 
-1. Extract the ZIP (if using the packaged download).
-2. Open `index.html` in a modern browser.
-3. On mobile, open the deployed page in Safari/Chrome. The touch joystick and action buttons appear on narrow screens.
+- **Responsive movement:** WASD/arrow keys on desktop, a touch joystick on mobile, and click/tap-to-move in the world. Clicking a nearby interactable moves the character into range and triggers the interaction.
+- **Live minimap:** player position and facing, enemy locations, interactables, the current quest objective, and a route line update as the world changes.
+- **Quest objective tracking:** the tracker follows the current step: meet the Archivist, recover the three echoes, return for the reward, investigate the gate, and confront the Page-Eater. The route updates when objectives change.
+- **Quest progression fixes:** echo pickups are gated by quest state; completed objectives correctly lead back to the Archivist; the gate no longer marks the boss defeated when the encounter merely starts; boss defeat now completes the story milestone.
+- **World interaction persistence:** recovered echoes and opened chests remain used after reloading this browser. Boss-spawn/defeat flags are saved and restored.
+- **Input and UI polish:** improved click/tap movement, objective status text, responsive minimap, keyboard input cleanup when the browser loses focus, and a clearer mobile interaction button.
 
-The game uses a local browser save (`localStorage`). Your save is tied to the browser and device; it is not yet a cloud account save.
+## Run locally
 
-## Controls
+1. Extract the ZIP.
+2. Open `index.html` in a modern browser. If your browser restricts local files, run a local static server from this folder instead:
+   - Python: `python -m http.server 8000`
+   - Then open `http://localhost:8000`.
 
-- **WASD / arrow keys:** move
-- **Space / Attack button:** basic attack
-- **Q:** Rift Cut — area damage
-- **E:** Phase Step — dash and brief invulnerability
-- **R:** Paradox — heavy area damage and self-heal
-- **F / Enter:** interact with nearby NPCs, echoes, caches, and gates
-- **Tab:** target nearest anomaly
-- **I:** inventory
-- **K:** skills panel
-- **Escape:** close modal
-- **Mobile:** drag the left joystick; use the right-side action buttons
-
-## Current playable systems
-
-- Camera-following top-down world with ruins, fissures, paths, landmarks, and a minimap panel
-- Hybrid target-assisted real-time combat
-- Enemy patrol/aggro, contact damage, target selection, health bars, hit effects, and respawn recovery
-- XP, leveling, HP/essence regeneration, shards, loot, equipment, and basic gear score
-- Three active abilities with costs and cooldowns
-- Intro dialogue, quest objective, three collectible echoes, reward turn-in, gate progression, and a boss encounter
-- Daily rotating event text, local time display, activity log, and local save/load
-- Responsive desktop/mobile UI
-
-## Known scope limits in this milestone
-
-- This is a vertical-slice prototype, not yet a full-length MMORPG-scale RPG.
-- The daily event is a local rotation, not a server-authoritative event that synchronizes across all players.
-- There are no online accounts, cloud saves, analytics, multiplayer, server-side anti-cheat, or live content delivery yet.
-- Art is procedurally drawn with Canvas primitives; production art, sound, animation, accessibility passes, and broad browser testing are future milestones.
-- The class selection screen, full skill trees, crafting loop, large multi-region campaign, and endgame systems are not implemented yet.
+No build step or package installation is required.
 
 ## Deploy to GitHub Pages
 
-1. Create a GitHub repository (or use a repository dedicated to this game).
-2. Upload `index.html`, `styles.css`, `game.js`, and `README.md` to the repository root. Keep the filenames exactly as shown.
-3. Open **Settings → Pages**.
-4. Under **Build and deployment**, choose **Deploy from a branch**, select `main` and `/(root)`, then save.
-5. Wait for the Pages deployment to finish and open the URL GitHub provides.
+Upload `index.html`, `styles.css`, `game.js`, and `README.md` to the repository root (or keep them together in a folder and configure Pages to publish that folder). Commit the changes and open the published Pages URL.
 
-No npm install or compilation is required. The game is a static site. Google Fonts are used when online; fallback system fonts work offline.
+## Controls
 
-## Suggested next milestone
+### Desktop
+- `WASD` or arrow keys: move
+- Click/tap an empty spot: move to destination
+- Click an enemy: select/approach; attack when in range
+- `Space`: attack
+- `Q`, `E`, `R`: active skills
+- `F` or `Enter`: interact
+- `Tab`: acquire nearest target
+- `I`: inventory · `K`: skills · `Esc`: close modal
+- **Track objective:** highlights the active quest destination on the minimap and in the world
 
-**Milestone 0.2 — Core RPG depth:** implement class selection and class-specific ability variants, gear slots and stat recalculation, a real quest journal, persistent enemy/boss completion state, additional dungeon rooms, and automated smoke tests for desktop/mobile input and save recovery.
+### Mobile
+- Use the virtual joystick to move
+- Tap empty ground to move to it
+- Tap interactables to walk into range and interact
+- Use the action buttons for attack, skills, and interaction
+
+## Save data
+
+Progress is stored in local browser storage. It is tied to that browser and device; clearing site data or switching browsers may remove the save. This milestone does not yet include cloud saves, user accounts, authoritative server schedules, or multiplayer.
+
+## QA performed for 0.2.0
+
+Automated browser checks were run with Chromium using the local page assets. Verified: no JavaScript page errors; keyboard movement changes player coordinates; minimap canvas renders; objective tracking selects a current destination; collecting all three echoes changes the objective to the Archivist; the reward transitions to **The Door Beneath**; interacting with the gate spawns the boss and updates tracking to the boss; defeating the boss sets the completion state and advances to **The Last Margin**. Mobile viewport checks verified touch controls are visible and tap-to-move changes player position.
+
+This is still an alpha build. Enemy collision/obstacle navigation, cloud persistence, deeper class specialization, and server-authoritative timed events remain future milestones.
